@@ -19,3 +19,18 @@ export async function login(
   const data = await res.json();
   return data.token;
 }
+
+export async function register(
+  username: string,
+  password: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Username already exists");
+  }
+}

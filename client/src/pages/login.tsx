@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { login } from "../api/auth";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -15,7 +16,9 @@ export default function Login() {
     try {
       const token = await login(username, password);
       localStorage.setItem("token", token);
-      alert("Login successful");
+      {
+        /* redirect after successful login will be added later */
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -25,16 +28,16 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-8">
-        <h1 className="mb-2 text-2xl font-semibold text-zinc-100">Sign in</h1>
-        <p className="mb-6 text-sm text-zinc-400">Please sign in...</p>
+      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <h1 className="mb-1 text-xl font-semibold text-zinc-100">Sign in</h1>
+        <p className="mb-4 text-xs text-zinc-400">Access your account</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm text-zinc-300">Username</label>
+            <label className="mb-1 block text-xs text-zinc-300">Username</label>
             <input
               type="text"
-              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 duration-300"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -42,25 +45,34 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-zinc-300">Password</label>
+            <label className="mb-1 block text-xs text-zinc-300">Password</label>
             <input
               type="password"
-              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 duration-300"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-xs text-red-500">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-orange-500 py-2 font-medium text-white hover:bg-orange-600 disabled:opacity-50"
-          >
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
+          <div className="flex justify-center mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-1/5 rounded-sm bg-orange-500 py-1 font-medium text-white text-xs hover:bg-orange-600 hover:cursor-pointer disabled:opacity-50 duration-300"
+            >
+              {loading ? "Signing in…" : "Login"}
+            </button>
+          </div>
+
+          <p className="text-center text-xs text-zinc-400">
+            Don’t have an account?{" "}
+            <Link to="/register" className="text-orange-500 hover:underline">
+              Register
+            </Link>
+          </p>
         </form>
       </div>
     </div>
