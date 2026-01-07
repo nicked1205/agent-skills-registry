@@ -150,4 +150,32 @@ public class SkillsController(AppDbContext db) : ControllerBase
 
         return NoContent();
     }
+
+    // update skill visibility (public/private) owned by the authenticated user
+    public record UpdateVisibilityRequest(bool IsPublic);
+
+    [HttpPatch("{id:int}/visibility")]
+    public async Task<IActionResult> UpdateVisibility(
+        int id,
+        [FromBody] UpdateVisibilityRequest request)
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var skill = await _db.Skills.FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (skill.OwnerId != userId)
+            return Forbid();
+
+        skill.IsPublic = request.IsPublic;
+        skill.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
