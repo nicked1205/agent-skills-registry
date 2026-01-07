@@ -23,6 +23,15 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
         if (await _db.Users.AnyAsync(u => u.Username == request.Username))
             return BadRequest("Username already exists");
 
+        try
+        {
+            PasswordValidator.Validate(request.Password);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
         var user = new User
         {
             Username = request.Username,

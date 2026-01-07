@@ -1,5 +1,3 @@
-using server.models;
-
 namespace server.models;
 
 public class SkillTag

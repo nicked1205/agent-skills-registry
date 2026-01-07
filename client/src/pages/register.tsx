@@ -19,6 +19,12 @@ export default function Register() {
       return;
     }
 
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -29,6 +35,18 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function validatePassword(password: string): string | null {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+
+    if (!/\d/.test(password)) {
+      return "Password must contain at least one digit";
+    }
+
+    return null;
   }
 
   return (
@@ -56,6 +74,7 @@ export default function Register() {
               <input
                 type="text"
                 className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                placeholder="e.g., johndoe"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -69,6 +88,7 @@ export default function Register() {
               <input
                 type="password"
                 className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                placeholder="At least 8 characters, incl. a number"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -82,6 +102,7 @@ export default function Register() {
               <input
                 type="password"
                 className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                placeholder="Re-enter your password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
