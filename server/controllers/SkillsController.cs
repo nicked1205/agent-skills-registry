@@ -1,0 +1,74 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using server.data;
+using server.models;
+using server.services;
+using System.Security.Claims;
+
+namespace server.controllers;
+
+[ApiController]
+[Route("skills")]
+[Authorize]
+public class SkillsController(AppDbContext db) : ControllerBase
+{
+    private readonly AppDbContext _db = db;
+
+    [HttpPost]
+    public async Task<IActionResult> UploadSkill(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded");
+
+        if (!file.FileName.EndsWith(".md"))
+            return BadRequest("Only .md files are supported"); // just to be sure, probably gonna add more validation later in frontend
+
+        string markdown;
+        using (var reader = new StreamReader(file.OpenReadStream()))
+        {
+            markdown = await reader.ReadToEndAsync();
+        }
+
+        SkillFrontmatter parsed;
+        try
+        {
+            parsed = FrontmatterParser.Parse(markdown);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var skill = new Skill
+        {
+            OwnerId = userId,
+            Name = parsed.Name,
+            Description = parsed.Description,
+            AllowedTools = parsed.AllowedTools,
+            IsPublic = false
+        };
+
+        _db.Skills.Add(skill);
+        await _db.SaveChangesAsync();
+
+        var version = new SkillVersion
+        {
+            SkillId = skill.Id,
+            VersionNumber = 1,
+            Content = parsed.Body
+        };
+
+        _db.SkillVersions.Add(version);
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            skill.Id,
+            skill.Name,
+            skill.Description
+        });
+    }
+}

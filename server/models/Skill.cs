@@ -24,6 +24,6 @@ public class Skill
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public List<SkillVersion> Versions { get; set; } = new();
-    public List<SkillTag> SkillTags { get; set; } = new();
+    public List<SkillVersion> Versions { get; set; } = [];
+    public List<SkillTag> SkillTags { get; set; } = [];
 }

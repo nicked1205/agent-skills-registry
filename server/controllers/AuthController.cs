@@ -12,16 +12,10 @@ namespace server.controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthController : ControllerBase
+public class AuthController(AppDbContext db, IConfiguration config) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    private readonly IConfiguration _config;
-
-    public AuthController(AppDbContext db, IConfiguration config)
-    {
-        _db = db;
-        _config = config;
-    }
+    private readonly AppDbContext _db = db;
+    private readonly IConfiguration _config = config;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] AuthRequest request)
@@ -67,7 +61,8 @@ public class AuthController : ControllerBase
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username)
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
         var token = new JwtSecurityToken(
