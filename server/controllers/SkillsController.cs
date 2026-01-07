@@ -15,6 +15,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
 {
     private readonly AppDbContext _db = db;
 
+    // upload a new skill via markdown file with frontmatter (auth required)
     [HttpPost]
     public async Task<IActionResult> UploadSkill(IFormFile file)
     {
@@ -72,6 +73,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
         });
     }
 
+    // get all skills owned by the authenticated user
     [HttpGet("mine")]
     public async Task<IActionResult> GetMySkills()
     {
@@ -97,5 +99,55 @@ public class SkillsController(AppDbContext db) : ControllerBase
             .ToListAsync();
 
         return Ok(skills);
+    }
+
+    // get all public skills (anonymous access allowed)
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> GetSkills()
+    {
+        var skills = await _db.Skills
+            .Where(s => s.IsPublic)
+            .Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.Description,
+                s.OwnerId,
+                LatestVersion = s.Versions
+                    .OrderByDescending(v => v.VersionNumber)
+                    .Select(v => v.VersionNumber)
+                    .FirstOrDefault(),
+                s.UpdatedAt
+            })
+            .OrderByDescending(s => s.UpdatedAt)
+            .ToListAsync();
+
+        return Ok(skills);
+    }
+
+    // delete a skill owned by the authenticated user
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteSkill(int id)
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var skill = await _db.Skills
+            .Include(s => s.Versions)
+            .Include(s => s.SkillTags)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (skill.OwnerId != userId)
+            return Forbid();
+
+        _db.Skills.Remove(skill);
+        await _db.SaveChangesAsync();
+
+        return NoContent();
     }
 }
