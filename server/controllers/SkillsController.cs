@@ -71,4 +71,31 @@ public class SkillsController(AppDbContext db) : ControllerBase
             skill.Description
         });
     }
+
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetMySkills()
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var skills = await _db.Skills
+            .Where(s => s.OwnerId == userId)
+            .Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.Description,
+                s.IsPublic,
+                LatestVersion = s.Versions
+                    .OrderByDescending(v => v.VersionNumber)
+                    .Select(v => v.VersionNumber)
+                    .FirstOrDefault(),
+                s.UpdatedAt
+            })
+            .OrderByDescending(s => s.UpdatedAt)
+            .ToListAsync();
+
+        return Ok(skills);
+    }
 }

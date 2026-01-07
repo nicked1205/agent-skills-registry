@@ -60,7 +60,6 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
@@ -72,6 +71,9 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
             expires: DateTime.UtcNow.AddHours(2),
             signingCredentials: creds
         );
+
+        Console.WriteLine(jwtConfig["Issuer"]);
+        Console.WriteLine(jwtConfig["Audience"]);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
