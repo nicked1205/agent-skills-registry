@@ -5,4 +5,6 @@ export type Skill = {
   latestVersion: number;
   updatedAt: string;
   isPublic?: boolean; // only there for /mine
+  ownerUsername: string;
+  content: string;
 };

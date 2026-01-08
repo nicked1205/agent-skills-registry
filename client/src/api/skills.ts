@@ -1,3 +1,5 @@
+import type { Skill } from "../types/skill";
+
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 if (!API_BASE) throw new Error("VITE_API_URL is not set");
@@ -39,4 +41,16 @@ export async function uploadSkill(file: File): Promise<void> {
     const text = await res.text();
     throw new Error(text || "Failed to upload skill");
   }
+}
+
+export async function fetchSkillById(id: number): Promise<Skill> {
+  const res = await fetch(`${API_BASE}/skills/${id}`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch skill");
+  }
+
+  return res.json();
 }

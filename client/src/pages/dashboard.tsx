@@ -3,6 +3,7 @@ import { fetchMySkills, fetchPublicSkills, uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
 import type { Skill } from "../types/skill";
 import { setTheme } from "../utils/theme";
+import { useNavigate } from "react-router-dom";
 
 type ViewMode = "private" | "public";
 
@@ -20,6 +21,8 @@ export default function Dashboard() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMe().then((data) => setUsername(data.username));
@@ -255,7 +258,8 @@ export default function Dashboard() {
           {skills.map((skill) => (
             <div
               key={skill.id}
-              className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300"
+              onClick={() => navigate(`/skills/${skill.id}`)}
+              className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
             >
               <h2 className="mb-1 text-sm font-semibold line-clamp-1">
                 {skill.name}

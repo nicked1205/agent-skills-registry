@@ -60,7 +60,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
         {
             SkillId = skill.Id,
             VersionNumber = 1,
-            Content = parsed.Body
+            Content = markdown
         };
 
         _db.SkillVersions.Add(version);
