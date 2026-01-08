@@ -67,12 +67,14 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-        <h1 className="mb-1 text-xl font-semibold text-zinc-100">
+    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+        <h1 className="mb-1 text-xl font-semibold text-zinc-900  dark:text-zinc-100">
           Create account
         </h1>
-        <p className="mb-4 text-xs text-zinc-400">Register a new account</p>
+        <p className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">
+          Register a new account
+        </p>
 
         {success ? (
           <p className="text-xs text-orange-500">
@@ -85,12 +87,12 @@ export default function Register() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs text-zinc-300">
+              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
                 Username
               </label>
               <input
                 type="text"
-                className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
                 placeholder="e.g., johndoe"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -99,12 +101,12 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-zinc-300">
+              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
                 Password
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
                 placeholder="At least 8 characters, incl. a number"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -113,12 +115,12 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-zinc-300">
+              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
                 Confirm password
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-300"
+                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
                 placeholder="Re-enter your password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}

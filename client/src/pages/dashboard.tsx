@@ -91,7 +91,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 duration-300">
       <input
         type="file"
         accept=".md"
@@ -100,17 +100,19 @@ export default function Dashboard() {
         onChange={handleFileChange}
       />
       {/* Header and Utility Bar */}
-      <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between duration-300">
         <h1 className="text-lg font-semibold">Agent Skill Registry</h1>
 
         <div className="relative flex items-center gap-3" ref={menuRef}>
           {/* Profile */}
-          <span className="text-sm text-zinc-400">Hi, {username ?? "…"}</span>
+          <span className="text-sm text-zinc-600 dark:text-zinc-400 duration-300">
+            Hi, {username ?? "…"}
+          </span>
 
           {/* Settings */}
           <button
             onClick={() => setSettingsOpen((o) => !o)}
-            className="p-1 text-zinc-400 hover:text-zinc-200 transition"
+            className="p-1"
             aria-label="Settings"
           >
             <svg
@@ -147,9 +149,11 @@ export default function Dashboard() {
           </button>
 
           {settingsOpen && (
-            <div className="absolute right-0 top-8 w-44 rounded-md border border-zinc-800 bg-zinc-900 shadow-lg">
+            <div className="z-10 absolute right-0 top-8 w-44 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shadow-md duration-300">
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-xs text-zinc-300">Dark mode</span>
+                <span className="text-xs text-zinc-600 dark:text-zinc-400 duration-300">
+                  Dark mode
+                </span>
 
                 <button
                   onClick={() => {
@@ -157,8 +161,10 @@ export default function Dashboard() {
                     setTheme(next);
                     setThemeState(next);
                   }}
-                  className={`relative inline-flex h-5 w-10 items-center rounded-full transition duration-300 hover:cursor-pointer hover:brightness-125 ${
-                    theme === "dark" ? "bg-orange-500" : "bg-zinc-700"
+                  className={`relative inline-flex h-5 w-10 items-center rounded-full transition duration-300 hover:cursor-pointer hover:dark:brightness-125 hover:brightness-90 ${
+                    theme === "dark"
+                      ? "bg-orange-500"
+                      : "bg-zinc-300 dark:bg-zinc-700"
                   }`}
                   aria-checked={theme === "dark"}
                   role="switch"
@@ -171,14 +177,14 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div className="border-t border-zinc-800" />
+              <div className="border-t border-zinc-200 dark:border-zinc-800 duration-300" />
 
               <button
                 onClick={() => {
                   localStorage.removeItem("token");
                   window.location.href = "/login";
                 }}
-                className="block w-full px-3 py-2 text-left text-xs text-red-400 hover:bg-zinc-800 duration-300 hover:cursor-pointer"
+                className="block rounded-b-md w-full px-3 py-2 text-left text-xs text-red-400 bg-zinc-100 hover:bg-zinc-200 hover:dark:bg-zinc-800 dark:bg-zinc-900 duration-300 hover:cursor-pointer"
               >
                 Logout
               </button>
@@ -196,7 +202,7 @@ export default function Dashboard() {
               className={`rounded-md px-3 py-1 text-xs font-medium transition duration-300 ${
                 view === "private"
                   ? "bg-orange-500 text-white"
-                  : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:cursor-pointer"
+                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 hover:dark:text-zinc-200 hover:cursor-pointer"
               }`}
             >
               My Skills
@@ -207,7 +213,7 @@ export default function Dashboard() {
               className={`rounded-md px-3 py-1 text-xs font-medium transition duration-300 ${
                 view === "public"
                   ? "bg-orange-500 text-white"
-                  : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:cursor-pointer"
+                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-800  hover:dark:text-zinc-200 hover:cursor-pointer"
               }`}
             >
               Public Skills
@@ -220,7 +226,7 @@ export default function Dashboard() {
             onClick={() => fileInputRef.current?.click()}
             className={`rounded-sm px-3 py-1 text-xs font-medium transition duration-300 ${
               view === "public"
-                ? "bg-zinc-700 text-zinc-400"
+                ? "bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 opacity-30"
                 : "bg-orange-500 text-white hover:bg-orange-600 hover:cursor-pointer"
             }`}
           >
@@ -229,7 +235,11 @@ export default function Dashboard() {
         </div>
 
         {/* Cards grid */}
-        {loading && <p className="text-xs text-zinc-400">Loading skills…</p>}
+        {loading && (
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 duration-300">
+            Loading skills…
+          </p>
+        )}
 
         {error && <p className="text-xs text-red-500">{error}</p>}
 
@@ -245,7 +255,7 @@ export default function Dashboard() {
           {skills.map((skill) => (
             <div
               key={skill.id}
-              className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-4"
+              className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300"
             >
               <h2 className="mb-1 text-sm font-semibold line-clamp-1">
                 {skill.name}
@@ -255,7 +265,7 @@ export default function Dashboard() {
                 {view === "private" ? "Posted by you" : "Posted by user"}
               </p>
 
-              <p className="mb-3 text-xs text-zinc-400 line-clamp-2">
+              <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
                 {skill.description}
               </p>
 

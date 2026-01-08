@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* enable class-based dark mode for theme toggling because tailwind v4 defaults to media-based */
+@custom-variant dark (&:where(.dark, .dark *));
