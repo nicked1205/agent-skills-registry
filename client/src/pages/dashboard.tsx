@@ -112,7 +112,10 @@ export default function Dashboard() {
         <div className="relative flex items-center gap-3" ref={menuRef}>
           {/* Profile */}
           <span className="text-sm text-zinc-600 dark:text-zinc-400 duration-300 font-light">
-            Hi, <span className="font-medium">{username ?? "…"}</span>
+            Hi,{" "}
+            <span className="font-medium inline-block max-w-[20vw] truncate align-middle">
+              {username ?? "…"}
+            </span>
           </span>
 
           {/* Settings */}

@@ -120,8 +120,8 @@ export default function SkillDetails() {
     try {
       await deleteSkill(skill.id);
       navigate("/dashboard");
-    } catch {
-      alert("Failed to delete skill");
+    } catch (err) {
+      alert((err as Error).message);
       setDeleting(false);
     }
   }
@@ -160,9 +160,9 @@ export default function SkillDetails() {
 
       <div className="mx-auto max-w-4xl rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
         {/* Header */}
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="flex justify-between">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 max-w-[60%] line-clamp-1">
               {skill.name}
             </h1>
             {isOwner && (
@@ -202,7 +202,7 @@ export default function SkillDetails() {
                       className="absolute right-1/2 translate-x-1/2 top-4 z-10 mt-2 w-40 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg"
                       ref={versionsRef}
                     >
-                      <div className="max-h-48 overflow-y-auto custom-scrollbar py-1 text-sm">
+                      <div className="max-h-40 overflow-y-auto custom-scrollbar py-1 text-sm">
                         {versions.length === 0 ? ( // just in case
                           <div className="px-3 py-2 text-zinc-500 text-xs">
                             No versions found
@@ -248,7 +248,9 @@ export default function SkillDetails() {
           <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500">
             <span>
               Posted by{" "}
-              <span className="font-medium">{skill.ownerUsername}</span>
+              <span className="font-medium inline-block max-w-[15vw] truncate align-middle">
+                {skill.ownerUsername}
+              </span>
             </span>
             <span>•</span>
             <span>v{skill.latestVersion}</span>
@@ -271,7 +273,7 @@ export default function SkillDetails() {
 
         {/* Description */}
         {skill.description && (
-          <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3">
+          <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400 max-h-[8vh] overflow-auto custom-scrollbar">
             {skill.description}
           </p>
         )}
@@ -327,7 +329,7 @@ export default function SkillDetails() {
           </div>
 
           {/* Content */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[50vh] overflow-auto custom-scrollbar">
+          <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[48vh] overflow-auto custom-scrollbar">
             <pre className="text-sm font-mono whitespace-pre-wrap">
               {skill.content || "// No content in this version"}
             </pre>

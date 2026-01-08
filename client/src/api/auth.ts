@@ -15,7 +15,8 @@ export async function login(
   });
 
   if (!res.ok) {
-    throw new Error("Invalid username or password");
+    const text = await res.text();
+    throw new Error(text || "Failed to login");
   }
 
   const data = await res.json();
@@ -33,7 +34,8 @@ export async function register(
   });
 
   if (!res.ok) {
-    throw new Error("Username already exists");
+    const text = await res.text();
+    throw new Error(text || "Failed to register");
   }
 }
 
@@ -46,7 +48,10 @@ export async function fetchMe() {
     },
   });
 
-  if (!res.ok) throw new Error("Failed to fetch user");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to get user info");
+  }
 
   return res.json();
 }

@@ -10,7 +10,7 @@ public class Skill
     public User Owner { get; set; } = null!;
 
     [Required]
-    [MaxLength(200)]
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
     [Required]

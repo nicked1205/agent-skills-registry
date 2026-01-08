@@ -56,8 +56,8 @@ export default function Register() {
   }
 
   function validateUsername(username: string): string | null {
-    if (username.length < 3) {
-      return "Username must be at least 3 characters long";
+    if (username.length < 3 || username.length > 100) {
+      return "Username must be between 3 and 100 characters long";
     }
 
     if (!/^[a-zA-Z0-9_.]+$/.test(username)) {

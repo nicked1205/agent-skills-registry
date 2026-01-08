@@ -18,8 +18,8 @@ export default function SkillEdit() {
         const skill = await fetchSkillById(Number(id));
         setContent(skill.content);
         setOriginal(skill.content);
-      } catch {
-        alert("Failed to load markdown content");
+      } catch (err) {
+        alert((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -33,8 +33,8 @@ export default function SkillEdit() {
     try {
       await createSkillVersion(Number(id), content);
       navigate(`/skills/${id}`);
-    } catch {
-      alert("Failed to save new version");
+    } catch (err) {
+      alert((err as Error).message);
     } finally {
       setSaving(false);
     }

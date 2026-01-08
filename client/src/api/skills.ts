@@ -16,14 +16,20 @@ export async function fetchMySkills() {
     headers: authHeaders(),
   });
 
-  if (!res.ok) throw new Error("Failed to load your skills");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to get your skills");
+  }
   return res.json();
 }
 
 export async function fetchPublicSkills() {
   const res = await fetch(`${API_BASE}/skills`);
 
-  if (!res.ok) throw new Error("Failed to load public skills");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to get public skills");
+  }
   return res.json();
 }
 
@@ -49,7 +55,8 @@ export async function fetchSkillById(id: number): Promise<Skill> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch skill");
+    const text = await res.text();
+    throw new Error(text || "Failed to get skill details");
   }
 
   return res.json();
@@ -69,7 +76,8 @@ export async function updateSkillVisibility(
   });
 
   if (!res.ok) {
-    throw new Error("Failed to update visibility");
+    const text = await res.text();
+    throw new Error(text || "Failed to update skill visibility");
   }
 }
 
@@ -80,7 +88,8 @@ export async function deleteSkill(id: number): Promise<void> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to delete skill");
+    const text = await res.text();
+    throw new Error(text || "Failed to delete skill");
   }
 }
 
@@ -109,7 +118,8 @@ export async function fetchSkillVersions(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to load version history");
+    const text = await res.text();
+    throw new Error(text || "Failed to get skill versions");
   }
 
   return res.json() as Promise<{ versionNumber: number; createdAt: string }[]>;

@@ -55,6 +55,12 @@ public static class FrontmatterParser
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description))
             throw new Exception("Frontmatter must include name and description"); // also following the format in the brief
 
+        if (name.Length > 100)
+            throw new Exception("Skill name must be 100 characters or fewer.");
+
+        if (description.Length > 500)
+            throw new Exception("Skill description must be 500 characters or fewer.");
+
         return new SkillFrontmatter(
             name,
             description,
