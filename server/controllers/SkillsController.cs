@@ -222,4 +222,94 @@ public class SkillsController(AppDbContext db) : ControllerBase
 
         return Ok(dto);
     }
+
+    // create a new skill version for a skill owned by the authenticated user
+    [Authorize]
+    [HttpPost("{id:int}/versions")]
+    public async Task<IActionResult> CreateSkillVersion(
+        int id,
+        [FromBody] CreateSkillVersionRequest request)
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        if (string.IsNullOrWhiteSpace(request.RawContent))
+            return BadRequest("Content cannot be empty.");
+
+        var skill = await _db.Skills
+            .Include(s => s.Versions)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (skill.OwnerId != userId)
+            return Forbid();
+
+        SkillFrontmatter parsed;
+        try
+        {
+            parsed = FrontmatterParser.Parse(request.RawContent);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        var nextVersionNumber = skill.Versions.Count != 0
+            ? skill.Versions.Max(v => v.VersionNumber) + 1
+            : 1;
+
+        var version = new SkillVersion
+        {
+            SkillId = skill.Id,
+            VersionNumber = nextVersionNumber,
+            Content = request.RawContent,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        skill.Name = parsed.Name;
+        skill.Description = parsed.Description;
+        skill.UpdatedAt = DateTimeOffset.UtcNow;
+
+        _db.SkillVersions.Add(version);
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new SkillVersionDto(
+            version.VersionNumber,
+            version.CreatedAt
+        ));
+    }
+
+    // get all versions of a skill by id owned by the authenticated user
+    [Authorize]
+    [HttpGet("{id:int}/versions")]
+    public async Task<IActionResult> GetSkillVersions(int id)
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var skill = await _db.Skills
+            .Include(s => s.Versions)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (!skill.IsPublic && skill.OwnerId != userId)
+            return Forbid();
+
+        var versions = skill.Versions
+            .OrderByDescending(v => v.VersionNumber)
+            .Select(v => new SkillVersionDto(
+                v.VersionNumber,
+                v.CreatedAt
+            ))
+            .ToList();
+
+        return Ok(versions);
+    }
 }
