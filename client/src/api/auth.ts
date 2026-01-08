@@ -36,3 +36,17 @@ export async function register(
     throw new Error("Username already exists");
   }
 }
+
+export async function fetchMe() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch user");
+
+  return res.json();
+}

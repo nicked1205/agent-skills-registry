@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -67,6 +68,18 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
         return Ok(new { token });
     }
 
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        var username = User.Identity?.Name;
+
+        if (username == null)
+            return Unauthorized();
+
+        return Ok(new { username });
+    }
+
     private string GenerateJwt(User user)
     {
         var jwtConfig = _config.GetSection("Jwt");
@@ -78,7 +91,7 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+            new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
