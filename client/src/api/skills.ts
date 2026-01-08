@@ -83,3 +83,34 @@ export async function deleteSkill(id: number): Promise<void> {
     throw new Error("Failed to delete skill");
   }
 }
+
+export async function createSkillVersion(
+  id: number,
+  rawContent: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/skills/${id}/versions`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ rawContent }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to save new version");
+  }
+}
+
+export async function fetchSkillVersions(id: number) {
+  const res = await fetch(`${API_BASE}/skills/${id}/versions`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to load version history");
+  }
+
+  return res.json() as Promise<{ versionNumber: number; createdAt: string }[]>;
+}

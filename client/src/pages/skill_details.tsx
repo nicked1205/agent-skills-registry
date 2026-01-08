@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchSkillById } from "../api/skills";
+import { fetchSkillById, fetchSkillVersions } from "../api/skills";
 import type { Skill } from "../types/skill";
 import { updateSkillVisibility, deleteSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
@@ -25,16 +25,24 @@ export default function SkillDetails() {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<
+    { versionNumber: number; createdAt: string }[]
+  >([]);
+
+  const versionsRef = useRef<HTMLDivElement | null>(null);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const isOwner = username?.username === skill?.ownerUsername;
 
+  // fetch user info on mount
   useEffect(() => {
     fetchMe().then((data) => setUsername(data));
   }, []);
 
+  // fetch skill details
   useEffect(() => {
     if (!id) return;
 
@@ -55,6 +63,37 @@ export default function SkillDetails() {
     load();
   }, [id]);
 
+  // fetch versions whenever versions is toggle
+  useEffect(() => {
+    if (!showVersions || !skill) return;
+
+    fetchSkillVersions(skill.id).then(setVersions).catch(console.error);
+  }, [showVersions, skill]);
+
+  // close versions modal when clicking outside
+  useEffect(() => {
+    function handleClickOutsideVersionsModal(event: MouseEvent) {
+      if (
+        versionsRef.current &&
+        !versionsRef.current.contains(event.target as Node)
+      ) {
+        setShowVersions(false);
+      }
+    }
+
+    if (showVersions) {
+      document.addEventListener("mousedown", handleClickOutsideVersionsModal);
+    }
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutsideVersionsModal
+      );
+    };
+  }, [showVersions]);
+
+  // handle visibility toggle
   async function handleToggleVisibility() {
     if (!skill) return;
 
@@ -62,15 +101,17 @@ export default function SkillDetails() {
     setUpdatingVisibility(true);
     try {
       await updateSkillVisibility(skill.id, next);
-    } catch (err) {
+    } catch {
       alert("Failed to update visibility");
     } finally {
+      // refresh skill details (mainly for last updated time)
       const fresh = await fetchSkillById(skill.id);
       setSkill(fresh);
       setUpdatingVisibility(false);
     }
   }
 
+  // handle skill deletion
   async function handleDelete() {
     if (!skill) return;
 
@@ -85,10 +126,12 @@ export default function SkillDetails() {
     }
   }
 
+  // loading state
   if (loading) {
     return <div className="p-6 text-sm text-zinc-500">Loading skill…</div>;
   }
 
+  // error state
   if (error || !skill) {
     return (
       <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
@@ -128,10 +171,67 @@ export default function SkillDetails() {
                 <button
                   onClick={handleToggleVisibility}
                   disabled={updatingVisibility}
-                  className="text-xs rounded-md px-3 py-1 text-orange-500 hover:underline disabled:opacity-50 duration-300 hover:cursor-pointer"
+                  className="text-xs rounded-md text-orange-500 hover:underline disabled:opacity-50 duration-300 hover:cursor-pointer"
                 >
                   {skill.isPublic ? "Make Private" : "Make Public"}
                 </button>
+
+                {/* Edit */}
+                <button
+                  onClick={() => navigate(`/skills/${skill.id}/edit`)}
+                  className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
+                >
+                  Edit
+                </button>
+
+                {/* Versions */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowVersions(!showVersions)}
+                    disabled={showVersions}
+                    className={`text-xs text-orange-500 ${
+                      showVersions ? "" : "hover:cursor-pointer hover:underline"
+                    }`}
+                  >
+                    Versions
+                  </button>
+
+                  {/* Versions modal */}
+                  {showVersions && (
+                    <div
+                      className="absolute right-1/2 translate-x-1/2 top-4 z-10 mt-2 w-40 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg"
+                      ref={versionsRef}
+                    >
+                      <div className="max-h-48 overflow-y-auto custom-scrollbar py-1 text-sm">
+                        {versions.length === 0 ? ( // just in case
+                          <div className="px-3 py-2 text-zinc-500 text-xs">
+                            No versions found
+                          </div>
+                        ) : (
+                          versions.map((v) => (
+                            <div
+                              key={v.versionNumber}
+                              className="flex items-center justify-between px-3 py-2 text-zinc-700 dark:text-zinc-300"
+                            >
+                              <span>
+                                v{v.versionNumber}
+                                {v.versionNumber === skill.latestVersion && (
+                                  <span className="ml-2 text-xs text-orange-500">
+                                    Latest
+                                  </span>
+                                )}
+                              </span>
+
+                              <span className="text-xs text-zinc-500">
+                                {new Date(v.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Delete */}
                 <button
@@ -144,6 +244,7 @@ export default function SkillDetails() {
             )}
           </div>
 
+          {/* Skill Info */}
           <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500">
             <span>
               Posted by{" "}
@@ -170,7 +271,7 @@ export default function SkillDetails() {
 
         {/* Description */}
         {skill.description && (
-          <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3">
             {skill.description}
           </p>
         )}
@@ -226,7 +327,7 @@ export default function SkillDetails() {
           </div>
 
           {/* Content */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[70vh] overflow-auto">
+          <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[50vh] overflow-auto custom-scrollbar">
             <pre className="text-sm font-mono whitespace-pre-wrap">
               {skill.content || "// No content in this version"}
             </pre>
@@ -242,7 +343,7 @@ export default function SkillDetails() {
         >
           <div
             className="bg-white dark:bg-zinc-900 rounded-lg p-6 w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()} // helps with close when click outside modal
+            onClick={(e) => e.stopPropagation()} // helps with close when click outside modal (doesnt close when clicking inside)
           >
             <h2 className="text-sm font-semibold mb-2 dark:text-zinc-200 text-zinc-800">
               Delete skill?

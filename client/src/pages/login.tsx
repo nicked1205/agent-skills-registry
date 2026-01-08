@@ -28,6 +28,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+        {/* Header */}
         <h1 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
           Sign in
         </h1>
@@ -35,6 +36,7 @@ export default function Login() {
           Access your account
         </p>
 
+        {/* Login form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
@@ -62,8 +64,10 @@ export default function Login() {
             />
           </div>
 
+          {/* Error message */}
           {error && <p className="text-xs text-red-500">{error}</p>}
 
+          {/* Submit button */}
           <div className="flex justify-center mt-4">
             <button
               type="submit"
@@ -74,6 +78,7 @@ export default function Login() {
             </button>
           </div>
 
+          {/* Link to register */}
           <p className="text-center text-xs text-zinc-600 dark:text-zinc-400">
             Don’t have an account?{" "}
             <Link to="/register" className="text-orange-500 hover:underline">

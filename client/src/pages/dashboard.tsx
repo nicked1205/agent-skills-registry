@@ -24,10 +24,12 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
+  // fetch user info on mount
   useEffect(() => {
     fetchMe().then((data) => setUsername(data.username));
   }, []);
 
+  // fetch skills based on view mode
   useEffect(() => {
     let active = true;
 
@@ -73,6 +75,7 @@ export default function Dashboard() {
     };
   }, [settingsOpen]);
 
+  // handle file upload
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -151,8 +154,10 @@ export default function Dashboard() {
             </svg>
           </button>
 
+          {/* Settings Modal */}
           {settingsOpen && (
             <div className="z-10 absolute right-0 top-8 w-44 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shadow-md duration-300">
+              {/* Dark Mode Toggle */}
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-xs text-zinc-600 dark:text-zinc-400 duration-300">
                   Dark mode
@@ -182,6 +187,7 @@ export default function Dashboard() {
 
               <div className="border-t border-zinc-200 dark:border-zinc-800 duration-300" />
 
+              {/* Logout Button */}
               <button
                 onClick={() => {
                   localStorage.removeItem("token");
@@ -197,8 +203,8 @@ export default function Dashboard() {
       </header>
 
       <main className="p-6 flex flex-col flex-1 overflow-hidden">
-        {/* Toggle and Add Skill */}
         <div className="mb-6 flex items-center justify-between">
+          {/* Toggle Public/Private */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setView("private")}
@@ -259,7 +265,7 @@ export default function Dashboard() {
             {skills
               .filter(
                 (skill) =>
-                  skill.ownerUsername !== username || view === "private"
+                  skill.ownerUsername !== username || view === "private" // only show own skills in private view
               )
               .map((skill) => (
                 <div
@@ -267,6 +273,7 @@ export default function Dashboard() {
                   onClick={() => navigate(`/skills/${skill.id}`)}
                   className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
                 >
+                  {/* Skill Card */}
                   <h2 className="mb-1 text-sm font-semibold line-clamp-1">
                     {skill.name}
                   </h2>
