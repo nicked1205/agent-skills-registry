@@ -54,3 +54,32 @@ export async function fetchSkillById(id: number): Promise<Skill> {
 
   return res.json();
 }
+
+export async function updateSkillVisibility(
+  id: number,
+  isPublic: boolean
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/skills/${id}/visibility`, {
+    method: "PATCH",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ isPublic }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update visibility");
+  }
+}
+
+export async function deleteSkill(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/skills/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete skill");
+  }
+}

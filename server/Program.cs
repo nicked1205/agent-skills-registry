@@ -39,8 +39,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var dbPath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    "app.db"
+); // force to use server/app.db to reduce confusion
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=app.db"));
+    options.UseSqlite($"Data Source={dbPath}")
+);
 
 builder.Services.AddCors(options =>
 {
@@ -87,6 +93,12 @@ builder.Services
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -82,7 +82,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
 
-        var skills = await _db.Skills
+        var skills = (await _db.Skills
             .Where(s => s.OwnerId == userId)
             .Select(s => new
             {
@@ -90,14 +90,16 @@ public class SkillsController(AppDbContext db) : ControllerBase
                 s.Name,
                 s.Description,
                 s.IsPublic,
+                OwnerUsername = s.Owner.Username,
                 LatestVersion = s.Versions
                     .OrderByDescending(v => v.VersionNumber)
                     .Select(v => v.VersionNumber)
                     .FirstOrDefault(),
                 s.UpdatedAt
             })
+            .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
-            .ToListAsync();
+            .ToList();
 
         return Ok(skills);
     }
@@ -107,22 +109,23 @@ public class SkillsController(AppDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetSkills()
     {
-        var skills = await _db.Skills
+        var skills = (await _db.Skills
             .Where(s => s.IsPublic)
             .Select(s => new
             {
                 s.Id,
                 s.Name,
                 s.Description,
-                s.OwnerId,
+                OwnerUsername = s.Owner.Username,
                 LatestVersion = s.Versions
                     .OrderByDescending(v => v.VersionNumber)
                     .Select(v => v.VersionNumber)
                     .FirstOrDefault(),
                 s.UpdatedAt
             })
+            .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
-            .ToListAsync();
+            .ToList();
 
         return Ok(skills);
     }
@@ -158,6 +161,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
     [HttpPatch("{id:int}/visibility")]
     public async Task<IActionResult> UpdateVisibility(
         int id,
+        // in case there are more fields to update in the future
         [FromBody] UpdateVisibilityRequest request)
     {
         var userId = int.Parse(
@@ -173,7 +177,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
             return Forbid();
 
         skill.IsPublic = request.IsPublic;
-        skill.UpdatedAt = DateTime.UtcNow;
+        skill.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();
 

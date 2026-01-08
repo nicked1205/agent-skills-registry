@@ -12,5 +12,5 @@ public class SkillDetailsDto
     public int LatestVersion { get; set; }
     public string Content { get; set; } = string.Empty;
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

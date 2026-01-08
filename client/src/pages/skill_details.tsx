@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchSkillById } from "../api/skills";
 import type { Skill } from "../types/skill";
+import { updateSkillVisibility, deleteSkill } from "../api/skills";
+import { fetchMe } from "../api/auth";
 
 type SkillDetails = {
   id: number;
@@ -19,9 +21,19 @@ export default function SkillDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [username, setUsername] = useState<{ username: string } | null>(null);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  const isOwner = username?.username === skill?.ownerUsername;
+
+  useEffect(() => {
+    fetchMe().then((data) => setUsername(data));
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -43,22 +55,52 @@ export default function SkillDetails() {
     load();
   }, [id]);
 
+  async function handleToggleVisibility() {
+    if (!skill) return;
+
+    const next = !skill.isPublic;
+    setUpdatingVisibility(true);
+    try {
+      await updateSkillVisibility(skill.id, next);
+    } catch (err) {
+      alert("Failed to update visibility");
+    } finally {
+      const fresh = await fetchSkillById(skill.id);
+      setSkill(fresh);
+      setUpdatingVisibility(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!skill) return;
+
+    setDeleting(true);
+
+    try {
+      await deleteSkill(skill.id);
+      navigate("/dashboard");
+    } catch {
+      alert("Failed to delete skill");
+      setDeleting(false);
+    }
+  }
+
   if (loading) {
     return <div className="p-6 text-sm text-zinc-500">Loading skill…</div>;
   }
 
   if (error || !skill) {
     return (
-      <div className="p-6">
-        <p className="mb-4 text-sm text-red-500">
-          {error ?? "Skill not found"}
-        </p>
+      <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
         <button
           onClick={() => navigate("/dashboard")}
           className="text-sm text-orange-500 hover:underline hover:cursor-pointer"
         >
           ← Back to dashboard
         </button>
+        <p className="mb-4 text-sm text-red-500">
+          {error ?? "Skill not found"}
+        </p>
       </div>
     );
   }
@@ -76,9 +118,31 @@ export default function SkillDetails() {
       <div className="mx-auto max-w-4xl rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
         {/* Header */}
         <div className="mb-4">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-            {skill.name}
-          </h1>
+          <div className="flex justify-between">
+            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+              {skill.name}
+            </h1>
+            {isOwner && (
+              <div className="flex items-center gap-4">
+                {/* Visibility toggle */}
+                <button
+                  onClick={handleToggleVisibility}
+                  disabled={updatingVisibility}
+                  className="text-xs rounded-md px-3 py-1 text-orange-500 hover:underline disabled:opacity-50 duration-300 hover:cursor-pointer"
+                >
+                  {skill.isPublic ? "Make Private" : "Make Public"}
+                </button>
+
+                {/* Delete */}
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-xs text-red-500 hover:underline hover:cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500">
             <span>
@@ -91,7 +155,15 @@ export default function SkillDetails() {
             <span>{skill.isPublic ? "Public" : "Private"}</span>
             <span>•</span>
             <span>
-              Last updated {new Date(skill.updatedAt).toLocaleString()}
+              Last updated{" "}
+              {new Date(skill.updatedAt).toLocaleString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
             </span>
           </div>
         </div>
@@ -161,6 +233,46 @@ export default function SkillDetails() {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-10"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white dark:bg-zinc-900 rounded-lg p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()} // helps with close when click outside modal
+          >
+            <h2 className="text-sm font-semibold mb-2 dark:text-zinc-200 text-zinc-800">
+              Delete skill?
+            </h2>
+
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+              This will permanently delete <strong>{skill.name}</strong> and all
+              its versions. This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="text-sm dark:text-zinc-400 text-zinc-600 hover:underline hover:cursor-pointer"
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-sm text-red-500 font-medium hover:underline hover:cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

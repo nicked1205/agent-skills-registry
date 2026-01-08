@@ -255,30 +255,36 @@ export default function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {skills.map((skill) => (
-            <div
-              key={skill.id}
-              onClick={() => navigate(`/skills/${skill.id}`)}
-              className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
-            >
-              <h2 className="mb-1 text-sm font-semibold line-clamp-1">
-                {skill.name}
-              </h2>
+          {skills
+            .filter(
+              (skill) => skill.ownerUsername !== username || view === "private"
+            )
+            .map((skill) => (
+              <div
+                key={skill.id}
+                onClick={() => navigate(`/skills/${skill.id}`)}
+                className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
+              >
+                <h2 className="mb-1 text-sm font-semibold line-clamp-1">
+                  {skill.name}
+                </h2>
 
-              <p className="mb-2 text-[11px] text-zinc-500 line-clamp-1">
-                {view === "private" ? "Posted by you" : "Posted by user"}
-              </p>
+                <p className="mb-2 text-[11px] text-zinc-500 line-clamp-1">
+                  {skill.ownerUsername === username
+                    ? "Posted by you"
+                    : `Posted by ${skill.ownerUsername}`}
+                </p>
 
-              <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
-                {skill.description}
-              </p>
+                <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
+                  {skill.description}
+                </p>
 
-              <div className="mt-auto flex justify-between text-xs text-zinc-500">
-                <span>v{skill.latestVersion}</span>
-                <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+                <div className="mt-auto flex justify-between text-xs text-zinc-500">
+                  <span>v{skill.latestVersion}</span>
+                  <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </main>
     </div>
