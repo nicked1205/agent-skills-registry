@@ -18,8 +18,8 @@ obj/
 app.db
 *.db
 
-.env
 .env.*
+!.env.example
 
 .vscode/
 .idea/

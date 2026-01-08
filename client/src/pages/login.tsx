@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { login } from "../api/auth";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -16,9 +17,7 @@ export default function Login() {
     try {
       const token = await login(username, password);
       localStorage.setItem("token", token);
-      {
-        /* redirect after successful login will be added later */
-      }
+      navigate("/dashboard");
     } catch (err) {
       setError((err as Error).message);
     } finally {

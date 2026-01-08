@@ -46,6 +46,10 @@ export default function Register() {
       return "Password must contain at least one digit";
     }
 
+    if (!/^[a-zA-Z0-9_.]+$/.test(password)) {
+      return "Password may only contain letters, numbers, underscores (_), and dots (.)";
+    }
+
     return null;
   }
 
