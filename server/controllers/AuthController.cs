@@ -25,6 +25,15 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
         try
         {
+            UsernameValidator.Validate(request.Username);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        try
+        {
             PasswordValidator.Validate(request.Password);
         }
         catch (ArgumentException ex)

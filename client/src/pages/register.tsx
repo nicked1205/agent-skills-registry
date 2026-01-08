@@ -19,6 +19,12 @@ export default function Register() {
       return;
     }
 
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      setError(usernameError);
+      return;
+    }
+
     const passwordError = validatePassword(password);
     if (passwordError) {
       setError(passwordError);
@@ -46,10 +52,17 @@ export default function Register() {
       return "Password must contain at least one digit";
     }
 
-    if (!/^[a-zA-Z0-9_.]+$/.test(password)) {
-      return "Password may only contain letters, numbers, underscores (_), and dots (.)";
+    return null;
+  }
+
+  function validateUsername(username: string): string | null {
+    if (username.length < 3) {
+      return "Username must be at least 3 characters long";
     }
 
+    if (!/^[a-zA-Z0-9_.]+$/.test(username)) {
+      return "Username may only contain letters, numbers, underscores (_), and dots (.)";
+    }
     return null;
   }
 
