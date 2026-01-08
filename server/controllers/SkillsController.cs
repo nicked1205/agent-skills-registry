@@ -5,6 +5,7 @@ using server.data;
 using server.models;
 using server.services;
 using System.Security.Claims;
+using server.dtos;
 
 namespace server.controllers;
 
@@ -177,5 +178,44 @@ public class SkillsController(AppDbContext db) : ControllerBase
         await _db.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    // get skill details by id (auth required)
+    [HttpGet("{id:int}")]
+    [Authorize]
+    public async Task<ActionResult<SkillDetailsDto>> GetSkillById(int id)
+    {
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var skill = await _db.Skills
+            .Include(s => s.Owner)
+            .Include(s => s.Versions)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (!skill.IsPublic && skill.OwnerId != userId)
+            return Forbid();
+
+        var latestVersion = skill.Versions
+            .OrderByDescending(v => v.VersionNumber)
+            .FirstOrDefault();
+
+        var dto = new SkillDetailsDto
+        {
+            Id = skill.Id,
+            Name = skill.Name,
+            Description = skill.Description,
+            IsPublic = skill.IsPublic,
+            OwnerUsername = skill.Owner.Username,
+            LatestVersion = latestVersion?.VersionNumber ?? 1,
+            Content = latestVersion?.Content ?? string.Empty,
+            UpdatedAt = skill.UpdatedAt
+        };
+
+        return Ok(dto);
     }
 }
