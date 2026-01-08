@@ -94,7 +94,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 duration-300">
+    <div className="h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 duration-300 flex flex-col overflow-hidden">
       <input
         type="file"
         accept=".md"
@@ -108,8 +108,8 @@ export default function Dashboard() {
 
         <div className="relative flex items-center gap-3" ref={menuRef}>
           {/* Profile */}
-          <span className="text-sm text-zinc-600 dark:text-zinc-400 duration-300">
-            Hi, {username ?? "…"}
+          <span className="text-sm text-zinc-600 dark:text-zinc-400 duration-300 font-light">
+            Hi, <span className="font-medium">{username ?? "…"}</span>
           </span>
 
           {/* Settings */}
@@ -196,7 +196,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="p-6">
+      <main className="p-6 flex flex-col flex-1 overflow-hidden">
         {/* Toggle and Add Skill */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -254,37 +254,42 @@ export default function Dashboard() {
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {skills
-            .filter(
-              (skill) => skill.ownerUsername !== username || view === "private"
-            )
-            .map((skill) => (
-              <div
-                key={skill.id}
-                onClick={() => navigate(`/skills/${skill.id}`)}
-                className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
-              >
-                <h2 className="mb-1 text-sm font-semibold line-clamp-1">
-                  {skill.name}
-                </h2>
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 m-3">
+            {skills
+              .filter(
+                (skill) =>
+                  skill.ownerUsername !== username || view === "private"
+              )
+              .map((skill) => (
+                <div
+                  key={skill.id}
+                  onClick={() => navigate(`/skills/${skill.id}`)}
+                  className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
+                >
+                  <h2 className="mb-1 text-sm font-semibold line-clamp-1">
+                    {skill.name}
+                  </h2>
 
-                <p className="mb-2 text-[11px] text-zinc-500 line-clamp-1">
-                  {skill.ownerUsername === username
-                    ? "Posted by you"
-                    : `Posted by ${skill.ownerUsername}`}
-                </p>
+                  <p className="mb-2 text-[11px] text-zinc-500 line-clamp-1">
+                    {skill.ownerUsername === username
+                      ? "Posted by you"
+                      : `Posted by ${skill.ownerUsername}`}
+                  </p>
 
-                <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
-                  {skill.description}
-                </p>
+                  <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
+                    {skill.description}
+                  </p>
 
-                <div className="mt-auto flex justify-between text-xs text-zinc-500">
-                  <span>v{skill.latestVersion}</span>
-                  <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+                  <div className="mt-auto flex justify-between text-xs text-zinc-500">
+                    <span>v{skill.latestVersion}</span>
+                    <span>
+                      {new Date(skill.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
       </main>
     </div>

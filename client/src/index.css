@@ -2,3 +2,26 @@
 
 /* enable class-based dark mode for theme toggling because tailwind v4 defaults to media-based */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(255, 105, 0, 0.5);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(255, 105, 0, 0.8);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255, 105, 0, 0.5) transparent;
+}
