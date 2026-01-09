@@ -1,15 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 import { fetchMySkills, fetchPublicSkills, uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
-import type { Skill } from "../types/skill";
+import type { SkillCardT } from "../types/skill-card";
 import { setTheme } from "../utils/theme";
 import { useNavigate } from "react-router-dom";
 
 type ViewMode = "private" | "public";
 
+const TAGS_DISPLAYED = 4;
+
 export default function Dashboard() {
   const [view, setView] = useState<ViewMode>("private");
-  const [skills, setSkills] = useState<Skill[]>([]);
+  const [skills, setSkills] = useState<SkillCardT[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -281,7 +283,7 @@ export default function Dashboard() {
                     {skill.name}
                   </h2>
 
-                  <p className="mb-2 text-[11px] text-zinc-500 line-clamp-1">
+                  <p className="mb-2 text-[11px] text-zinc-500 max-w-[60%] truncate">
                     {skill.ownerUsername === username
                       ? "Posted by you"
                       : `Posted by ${skill.ownerUsername}`}
@@ -297,6 +299,33 @@ export default function Dashboard() {
                       {new Date(skill.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
+                  {/* Tags row */}
+                  {skill.tags.length > 0 && (
+                    <div className="mt-2 flex items-center text-[11px] text-zinc-500">
+                      <span className="shrink-0 mr-3">Tags:</span>
+
+                      {/* Tags*/}
+                      <div className="flex-1 flex justify-start">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          {skill.tags.slice(0, TAGS_DISPLAYED).map((tag) => (
+                            <span
+                              key={tag.id}
+                              className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 truncate max-w-20"
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+
+                          {/* Remaining tags */}
+                          {skill.tags.length > TAGS_DISPLAYED && (
+                            <span className="text-zinc-400 shrink-0">
+                              +{skill.tags.length - TAGS_DISPLAYED}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

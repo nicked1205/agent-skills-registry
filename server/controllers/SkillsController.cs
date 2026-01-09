@@ -84,19 +84,22 @@ public class SkillsController(AppDbContext db) : ControllerBase
 
         var skills = (await _db.Skills
             .Where(s => s.OwnerId == userId)
-            .Select(s => new
-            {
+            .Select(s => new SkillCardDto(
                 s.Id,
                 s.Name,
                 s.Description,
-                s.IsPublic,
-                OwnerUsername = s.Owner.Username,
-                LatestVersion = s.Versions
+                s.Owner.Username,
+                s.Versions
                     .OrderByDescending(v => v.VersionNumber)
                     .Select(v => v.VersionNumber)
                     .FirstOrDefault(),
-                s.UpdatedAt
-            })
+                s.UpdatedAt,
+                s.SkillTags
+                    .OrderBy(st => st.Tag.Name)
+                    .Select(st => new TagDto(st.TagId, st.Tag.Name))
+                    .ToList(),
+                s.IsPublic
+            ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
             .ToList();
@@ -111,18 +114,22 @@ public class SkillsController(AppDbContext db) : ControllerBase
     {
         var skills = (await _db.Skills
             .Where(s => s.IsPublic)
-            .Select(s => new
-            {
+            .Select(s => new SkillCardDto(
                 s.Id,
                 s.Name,
                 s.Description,
-                OwnerUsername = s.Owner.Username,
-                LatestVersion = s.Versions
+                s.Owner.Username,
+                s.Versions
                     .OrderByDescending(v => v.VersionNumber)
                     .Select(v => v.VersionNumber)
                     .FirstOrDefault(),
-                s.UpdatedAt
-            })
+                s.UpdatedAt,
+                s.SkillTags
+                    .OrderBy(st => st.Tag.Name)
+                    .Select(st => new TagDto(st.TagId, st.Tag.Name))
+                    .ToList(),
+                s.IsPublic
+            ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
             .ToList();
@@ -184,7 +191,6 @@ public class SkillsController(AppDbContext db) : ControllerBase
 
     // get skill details by id (auth required)
     [HttpGet("{id:int}")]
-    [Authorize]
     public async Task<ActionResult<SkillDetailsDto>> GetSkillById(int id)
     {
         var userId = int.Parse(
@@ -194,8 +200,10 @@ public class SkillsController(AppDbContext db) : ControllerBase
         var skill = await _db.Skills
             .Include(s => s.Owner)
             .Include(s => s.Versions)
+            .Include(s => s.SkillTags)
+                .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
-
+            
         if (skill == null)
             return NotFound();
 
@@ -215,14 +223,17 @@ public class SkillsController(AppDbContext db) : ControllerBase
             OwnerUsername = skill.Owner.Username,
             LatestVersion = latestVersion?.VersionNumber ?? 1,
             Content = latestVersion?.Content ?? string.Empty,
-            UpdatedAt = skill.UpdatedAt
+            UpdatedAt = skill.UpdatedAt,
+            Tags = skill.SkillTags
+                .OrderBy(st => st.Tag.Name)
+                .Select(st => new TagDto(st.TagId, st.Tag.Name))
+                .ToList()
         };
 
         return Ok(dto);
     }
 
     // create a new skill version for a skill owned by the authenticated user
-    [Authorize]
     [HttpPost("{id:int}/versions")]
     public async Task<IActionResult> CreateSkillVersion(
         int id,
@@ -282,7 +293,6 @@ public class SkillsController(AppDbContext db) : ControllerBase
     }
 
     // get all versions of a skill by id owned by the authenticated user
-    [Authorize]
     [HttpGet("{id:int}/versions")]
     public async Task<IActionResult> GetSkillVersions(int id)
     {
@@ -312,7 +322,6 @@ public class SkillsController(AppDbContext db) : ControllerBase
     }
 
     // get all tags of a skill by id (auth required)
-    [Authorize]
     [HttpGet("{id:int}/tags")]
     public async Task<IActionResult> GetSkillTags(int id)
     {
@@ -325,15 +334,14 @@ public class SkillsController(AppDbContext db) : ControllerBase
             return NotFound();
 
         var tags = skill.SkillTags
+            .OrderBy(st => st.Tag.Name)
             .Select(st => new TagDto(st.TagId, st.Tag.Name))
-            .OrderBy(t => t.Name)
             .ToList();
 
         return Ok(tags);
     }
 
     // add a tag to a skill owned by the authenticated user
-    [Authorize]
     [HttpPost("{id:int}/tags")]
     public async Task<IActionResult> AddTag(
         int id,
@@ -351,7 +359,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
             return BadRequest("Tag must be 20 characters or fewer.");
 
         if (!normalized.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '.' || c == '-')) 
-            return BadRequest("Username may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
+            return BadRequest("Tag may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
 
         var skill = await _db.Skills
             .Include(s => s.SkillTags)
@@ -376,7 +384,7 @@ public class SkillsController(AppDbContext db) : ControllerBase
         // check if skill already has this tag
         var alreadyTagged = skill.SkillTags.Any(st => st.Tag.Name == normalized);
         if (alreadyTagged)
-            return Ok(); // dont do anything if exists
+            return Ok(new TagDto(tag.Id, tag.Name)); // dont do anything if exists
 
         skill.SkillTags.Add(new SkillTag
         {
@@ -385,11 +393,10 @@ public class SkillsController(AppDbContext db) : ControllerBase
         });
 
         await _db.SaveChangesAsync();
-        return Ok();
+        return Ok(new TagDto(tag.Id, tag.Name));
     }
 
-    // remove a tag from a skill owned by the authenticated user
-    [Authorize]
+    // remove a tag by tagid from a skill owned by the authenticated user
     [HttpDelete("{id:int}/tags/{tagId:int}")]
     public async Task<IActionResult> RemoveTag(int id, int tagId)
     {

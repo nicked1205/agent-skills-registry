@@ -110,4 +110,5 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
     }
 }
 
+// used only by this file
 public record AuthRequest(string Username, string Password);
