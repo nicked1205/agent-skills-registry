@@ -1,0 +1,66 @@
+import { useNavigate } from "react-router-dom";
+import type { SkillCardT } from "../../types/skill-card";
+
+interface Props {
+  skill: SkillCardT;
+  username: string | null;
+}
+
+const TAGS_DISPLAYED = 3;
+
+export default function SkillCard({ skill, username }: Props) {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      key={skill.id}
+      onClick={() => navigate(`/skills/${skill.id}`)}
+      className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
+    >
+      {/* Skill Card */}
+      <h2 className="mb-1 text-sm font-semibold line-clamp-1">{skill.name}</h2>
+
+      <p className="mb-2 text-[11px] text-zinc-500 max-w-[60%] truncate">
+        {skill.ownerUsername === username
+          ? "Posted by you"
+          : `Posted by ${skill.ownerUsername}`}
+      </p>
+
+      <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
+        {skill.description}
+      </p>
+
+      <div className="mt-auto flex justify-between text-xs text-zinc-500">
+        <span>v{skill.latestVersion}</span>
+        <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+      </div>
+      {/* Tags row */}
+      {skill.tags.length > 0 && (
+        <div className="mt-2 flex items-center text-[11px] text-zinc-500">
+          <span className="shrink-0 mr-3">Tags:</span>
+
+          {/* Tags*/}
+          <div className="flex-1 flex justify-start">
+            <div className="flex items-center gap-2 overflow-hidden">
+              {skill.tags.slice(0, TAGS_DISPLAYED).map((tag) => (
+                <span
+                  key={tag.id}
+                  className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 truncate max-w-20 duration-300"
+                >
+                  {tag.name}
+                </span>
+              ))}
+
+              {/* Remaining tags */}
+              {skill.tags.length > TAGS_DISPLAYED && (
+                <span className="text-zinc-400 shrink-0">
+                  +{skill.tags.length - TAGS_DISPLAYED}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

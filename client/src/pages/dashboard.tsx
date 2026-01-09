@@ -1,16 +1,14 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchSkills, uploadSkill } from "../api/skills";
+import { uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
-import type { SkillCardT } from "../types/skill-card";
-import { setTheme } from "../utils/theme";
-import { useNavigate } from "react-router-dom";
 import { fetchAllTags } from "../api/tag";
 import type { TagT } from "../types/tag";
 import { useSearchParams } from "react-router-dom";
+import DashboardHeader from "../components/dashboard/DashboardHeader";
+import SkillGrid from "../components/dashboard/SkillGrid";
 
 type ViewMode = "private" | "public";
 
-const TAGS_DISPLAYED = 3;
 const MAX_TAG_FILTERS = 5;
 
 export default function Dashboard() {
@@ -26,17 +24,8 @@ export default function Dashboard() {
     : [];
 
   const [view, setView] = useState<ViewMode>(initialView); // view mode
-  const [skills, setSkills] = useState<SkillCardT[]>([]); // skills list
-  const [loading, setLoading] = useState(false); // loading state
-  const [error, setError] = useState<string | null>(null); // error message
-  const [reloadKey, setReloadKey] = useState(0); // helps with reload skill list after update
-  const [settingsOpen, setSettingsOpen] = useState(false); // settings menu
+  const [reloadKey, setReloadKey] = useState(0); // helps with refetch skill list after update
   const [username, setUsername] = useState<string | null>(null); // current user
-
-  // theme
-  const [theme, setThemeState] = useState<"dark" | "light">(
-    (localStorage.getItem("theme") as "dark" | "light") ?? "dark"
-  );
 
   // search dropdown
   const [searchOpen, setSearchOpen] = useState(
@@ -55,9 +44,6 @@ export default function Dashboard() {
   const [appliedTags, setAppliedTags] = useState<string[]>(initialTags);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null); // ref for Add Skill
-  const menuRef = useRef<HTMLDivElement | null>(null); // ref for settings menu
-
-  const navigate = useNavigate();
 
   // update url when search params are applied and depend on view mode
   function updateUrl(
@@ -84,47 +70,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchMe().then((data) => setUsername(data.username));
   }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    async function load() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await fetchSkills(view, appliedSearch, appliedTags);
-
-        if (active) setSkills(data);
-      } catch (err) {
-        if (active) setError((err as Error).message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      active = false;
-    };
-  }, [view, reloadKey, appliedSearch, appliedTags]);
-
-  // close settings menu on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setSettingsOpen(false);
-      }
-    }
-
-    if (settingsOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [settingsOpen]);
 
   // fetch tags when dropdown open or the search state changes
   useEffect(() => {
@@ -164,105 +109,7 @@ export default function Dashboard() {
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      {/* Header and Utility Bar */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between duration-300">
-        <h1 className="text-lg font-semibold">Agent Skill Registry</h1>
-
-        <div className="relative flex items-center gap-3" ref={menuRef}>
-          {/* Profile */}
-          <span className="text-sm text-zinc-600 dark:text-zinc-400 duration-300 font-light">
-            Hi,{" "}
-            <span className="font-medium inline-block max-w-[20vw] truncate align-middle">
-              {username ?? "…"}
-            </span>
-          </span>
-
-          {/* Settings */}
-          <button
-            onClick={() => setSettingsOpen((o) => !o)}
-            className="p-1"
-            aria-label="Settings"
-          >
-            <svg
-              className={`h-5 w-5 transition-transform hover:cursor-pointer hover:rotate-90 duration-300 ${
-                settingsOpen ? "rotate-90" : ""
-              }`}
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="3"
-                  stroke="var(--color-orange-500)"
-                  strokeWidth="2"
-                ></circle>{" "}
-                <path
-                  d="M3.66122 10.6392C4.13377 10.9361 4.43782 11.4419 4.43782 11.9999C4.43781 12.558 4.13376 13.0638 3.66122 13.3607C3.33966 13.5627 3.13248 13.7242 2.98508 13.9163C2.66217 14.3372 2.51966 14.869 2.5889 15.3949C2.64082 15.7893 2.87379 16.1928 3.33973 16.9999C3.80568 17.8069 4.03865 18.2104 4.35426 18.4526C4.77508 18.7755 5.30694 18.918 5.83284 18.8488C6.07287 18.8172 6.31628 18.7185 6.65196 18.5411C7.14544 18.2803 7.73558 18.2699 8.21895 18.549C8.70227 18.8281 8.98827 19.3443 9.00912 19.902C9.02332 20.2815 9.05958 20.5417 9.15224 20.7654C9.35523 21.2554 9.74458 21.6448 10.2346 21.8478C10.6022 22 11.0681 22 12 22C12.9319 22 13.3978 22 13.7654 21.8478C14.2554 21.6448 14.6448 21.2554 14.8478 20.7654C14.9404 20.5417 14.9767 20.2815 14.9909 19.9021C15.0117 19.3443 15.2977 18.8281 15.7811 18.549C16.2644 18.27 16.8545 18.2804 17.3479 18.5412C17.6837 18.7186 17.9271 18.8173 18.1671 18.8489C18.693 18.9182 19.2249 18.7756 19.6457 18.4527C19.9613 18.2106 20.1943 17.807 20.6603 17C20.8677 16.6407 21.029 16.3614 21.1486 16.1272M20.3387 13.3608C19.8662 13.0639 19.5622 12.5581 19.5621 12.0001C19.5621 11.442 19.8662 10.9361 20.3387 10.6392C20.6603 10.4372 20.8674 10.2757 21.0148 10.0836C21.3377 9.66278 21.4802 9.13092 21.411 8.60502C21.3591 8.2106 21.1261 7.80708 20.6601 7.00005C20.1942 6.19301 19.9612 5.7895 19.6456 5.54732C19.2248 5.22441 18.6929 5.0819 18.167 5.15113C17.927 5.18274 17.6836 5.2814 17.3479 5.45883C16.8544 5.71964 16.2643 5.73004 15.781 5.45096C15.2977 5.1719 15.0117 4.6557 14.9909 4.09803C14.9767 3.71852 14.9404 3.45835 14.8478 3.23463C14.6448 2.74458 14.2554 2.35523 13.7654 2.15224C13.3978 2 12.9319 2 12 2C11.0681 2 10.6022 2 10.2346 2.15224C9.74458 2.35523 9.35523 2.74458 9.15224 3.23463C9.05958 3.45833 9.02332 3.71848 9.00912 4.09794C8.98826 4.65566 8.70225 5.17191 8.21891 5.45096C7.73557 5.73002 7.14548 5.71959 6.65205 5.4588C6.31633 5.28136 6.0729 5.18269 5.83285 5.15108C5.30695 5.08185 4.77509 5.22436 4.35427 5.54727C4.03866 5.78945 3.80569 6.19297 3.33974 7C3.13231 7.35929 2.97105 7.63859 2.85138 7.87273"
-                  stroke="var(--color-orange-500)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                ></path>{" "}
-              </g>
-            </svg>
-          </button>
-
-          {/* Settings Modal */}
-          {settingsOpen && (
-            <div className="z-10 absolute right-0 top-8 w-44 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 shadow-md duration-300">
-              {/* Dark Mode Toggle */}
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-xs text-zinc-600 dark:text-zinc-400 duration-300">
-                  Dark mode
-                </span>
-
-                <button
-                  onClick={() => {
-                    const next = theme === "dark" ? "light" : "dark";
-                    setTheme(next);
-                    setThemeState(next);
-                  }}
-                  className={`relative inline-flex h-5 w-10 items-center rounded-full transition duration-300 hover:cursor-pointer hover:dark:brightness-125 hover:brightness-90 ${
-                    theme === "dark"
-                      ? "bg-orange-500"
-                      : "bg-zinc-300 dark:bg-zinc-700"
-                  }`}
-                  aria-checked={theme === "dark"}
-                  role="switch"
-                >
-                  <span
-                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-300 ${
-                      theme === "dark" ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <div className="border-t border-zinc-200 dark:border-zinc-800 duration-300" />
-
-              {/* Logout Button */}
-              <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  window.location.href = "/login";
-                }}
-                className="block rounded-b-md w-full px-3 py-2 text-left text-xs text-red-400 bg-zinc-100 hover:bg-zinc-200 hover:dark:bg-zinc-800 dark:bg-zinc-900 duration-300 hover:cursor-pointer"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+      <DashboardHeader username={username} />
 
       <main className="p-6 flex flex-col flex-1 overflow-hidden">
         <div className="mb-2 flex items-center justify-between">
@@ -357,27 +204,53 @@ export default function Dashboard() {
               placeholder="Search skills by name…"
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
-              className="flex-1 min-w-60 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-orange-500 duration-200 caret-amber-500"
+              className="flex-1 min-w-60 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-orange-500 duration-300 caret-amber-500"
             />
 
             {/* Tag filter toggle */}
             <div className="relative">
               <button
                 onClick={() => setTagFilterOpen((o) => !o)}
-                className="whitespace-nowrap rounded-md border border-zinc-300 dark:border-zinc-700 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:cursor-pointer duration-300 transition"
+                className="flex whitespace-nowrap rounded-md border border-zinc-300 dark:border-zinc-700 pl-3 pr-2 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:cursor-pointer duration-300 transition"
               >
-                Filter by tags ▾
+                Filter by tags{" "}
+                <span className={`p-0.75 ${tagFilterOpen ? "rotate-180" : ""}`}>
+                  <svg
+                    className="h-3 w-3 fill-zinc-600 dark:fill-zinc-400"
+                    viewBox="0 0 16 16"
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="#000000"
+                  >
+                    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      {" "}
+                      <rect
+                        width="16"
+                        height="16"
+                        id="icon-bound"
+                        fill="none"
+                      ></rect>{" "}
+                      <polygon points="8,5 13,10 3,10"></polygon>{" "}
+                    </g>
+                  </svg>
+                </span>
               </button>
 
               {/* Tag filter dropdown */}
               {tagFilterOpen && (
-                <div className="z-10 -translate-x-1/2 left-1/2 absolute mt-2 w-50 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 shadow-md">
+                <div className="z-10 -translate-x-1/2 left-1/2 absolute mt-2 w-50 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 shadow-md duration-300">
                   {/* Tag Search */}
                   <input
                     value={tagSearch}
                     onChange={(e) => setTagSearch(e.target.value)}
                     placeholder="Search tags..."
-                    className="mb-2 w-full rounded border border-zinc-300 dark:border-zinc-700 outline-none focus:ring-1 focus:ring-orange-500 duration-200 px-2 py-1 text-xs caret-amber-500"
+                    className="mb-2 w-full rounded border border-zinc-300 dark:border-zinc-700 outline-none focus:ring-1 focus:ring-orange-500 duration-300 px-2 py-1 text-xs caret-amber-500"
                   />
 
                   <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1 text-xs items-center">
@@ -449,89 +322,13 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* Cards grid */}
-        {loading && (
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 duration-300 ml-2 mt-4">
-            Loading skills…
-          </p>
-        )}
-
-        {error && <p className="text-xs text-red-500">{error}</p>}
-
-        {!loading && !error && skills.length === 0 && (
-          <p className="text-xs text-zinc-500 ml-2 mt-4">
-            {view === "private"
-              ? "You haven’t uploaded any skills yet."
-              : "No public skills available."}
-          </p>
-        )}
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 m-3">
-            {skills
-              .filter(
-                (skill) =>
-                  skill.ownerUsername !== username || view === "private" // only show own skills in private view
-              )
-              .map((skill) => (
-                <div
-                  key={skill.id}
-                  onClick={() => navigate(`/skills/${skill.id}`)}
-                  className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
-                >
-                  {/* Skill Card */}
-                  <h2 className="mb-1 text-sm font-semibold line-clamp-1">
-                    {skill.name}
-                  </h2>
-
-                  <p className="mb-2 text-[11px] text-zinc-500 max-w-[60%] truncate">
-                    {skill.ownerUsername === username
-                      ? "Posted by you"
-                      : `Posted by ${skill.ownerUsername}`}
-                  </p>
-
-                  <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
-                    {skill.description}
-                  </p>
-
-                  <div className="mt-auto flex justify-between text-xs text-zinc-500">
-                    <span>v{skill.latestVersion}</span>
-                    <span>
-                      {new Date(skill.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {/* Tags row */}
-                  {skill.tags.length > 0 && (
-                    <div className="mt-2 flex items-center text-[11px] text-zinc-500">
-                      <span className="shrink-0 mr-3">Tags:</span>
-
-                      {/* Tags*/}
-                      <div className="flex-1 flex justify-start">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          {skill.tags.slice(0, TAGS_DISPLAYED).map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 truncate max-w-20"
-                            >
-                              {tag.name}
-                            </span>
-                          ))}
-
-                          {/* Remaining tags */}
-                          {skill.tags.length > TAGS_DISPLAYED && (
-                            <span className="text-zinc-400 shrink-0">
-                              +{skill.tags.length - TAGS_DISPLAYED}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-          </div>
-        </div>
+        <SkillGrid
+          username={username}
+          view={view}
+          reloadKey={reloadKey}
+          appliedSearch={appliedSearch}
+          appliedTags={appliedTags}
+        />
       </main>
     </div>
   );
