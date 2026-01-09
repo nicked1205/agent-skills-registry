@@ -1,5 +1,6 @@
 namespace server.dtos;
 
+// used in many endpoints and matches skill.ts in frontend
 public class SkillDetailsDto
 {
     public int Id { get; set; }

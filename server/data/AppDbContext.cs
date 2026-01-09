@@ -35,11 +35,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SkillTag>()
             .HasKey(st => new { st.SkillId, st.TagId });
 
+        // Skill side of SkillTag relationship (many-to-many)
         modelBuilder.Entity<SkillTag>()
             .HasOne(st => st.Skill)
             .WithMany(s => s.SkillTags)
             .HasForeignKey(st => st.SkillId);
 
+        // Tag side of SkillTag relationship (many-to-many)
         modelBuilder.Entity<SkillTag>()
             .HasOne(st => st.Tag)
             .WithMany(t => t.SkillTags)

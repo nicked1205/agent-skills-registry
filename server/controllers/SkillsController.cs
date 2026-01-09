@@ -156,8 +156,6 @@ public class SkillsController(AppDbContext db) : ControllerBase
     }
 
     // update skill visibility (public/private) owned by the authenticated user
-    public record UpdateVisibilityRequest(bool IsPublic);
-
     [HttpPatch("{id:int}/visibility")]
     public async Task<IActionResult> UpdateVisibility(
         int id,
@@ -311,5 +309,113 @@ public class SkillsController(AppDbContext db) : ControllerBase
             .ToList();
 
         return Ok(versions);
+    }
+
+    // get all tags of a skill by id (auth required)
+    [Authorize]
+    [HttpGet("{id:int}/tags")]
+    public async Task<IActionResult> GetSkillTags(int id)
+    {
+        var skill = await _db.Skills
+            .Include(s => s.SkillTags)
+            .ThenInclude(st => st.Tag)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        var tags = skill.SkillTags
+            .Select(st => st.Tag.Name)
+            .OrderBy(t => t)
+            .ToList();
+
+        return Ok(tags);
+    }
+
+    // add a tag to a skill owned by the authenticated user
+    [HttpPost("{id:int}/tags")]
+    public async Task<IActionResult> AddTag(
+        int id,
+        [FromBody] AddTagDto dto)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        if (string.IsNullOrWhiteSpace(dto.Tag))
+            return BadRequest("Tag cannot be empty.");
+
+        // normalize tag name in BE in case haven''t done in frontend
+        var normalized = dto.Tag.Trim().ToLowerInvariant();
+
+        if (normalized.Length > 20)
+            return BadRequest("Tag must be 20 characters or fewer.");
+
+        if (!normalized.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '.' || c == '-')) 
+            return BadRequest("Username may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
+
+        var skill = await _db.Skills
+            .Include(s => s.SkillTags)
+            .ThenInclude(st => st.Tag)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (skill.OwnerId != userId)
+            return Forbid();
+
+        // check if tag already exists globally
+        var tag = await _db.Tags.FirstOrDefaultAsync(t => t.Name == normalized);
+
+        if (tag == null)
+        {
+            tag = new Tag { Name = normalized };
+            _db.Tags.Add(tag);
+        }
+
+        // check if skill already has this tag
+        var alreadyTagged = skill.SkillTags.Any(st => st.Tag.Name == normalized);
+        if (alreadyTagged)
+            return Ok(); // dont do anything if exists
+
+        skill.SkillTags.Add(new SkillTag
+        {
+            Skill = skill,
+            Tag = tag
+        });
+
+        await _db.SaveChangesAsync();
+        return Ok();
+    }
+
+    // remove a tag from a skill owned by the authenticated user
+    [HttpDelete("{id:int}/tags/{tag}")]
+    public async Task<IActionResult> RemoveTag(int id, string tag)
+    {   
+        // normalize tag name in BE in case frontend misses something
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var normalized = tag.Trim().ToLowerInvariant();
+
+        var skill = await _db.Skills
+            .Include(s => s.SkillTags)
+            .ThenInclude(st => st.Tag)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null)
+            return NotFound();
+
+        if (skill.OwnerId != userId)
+            return Forbid();
+
+        var skillTag = skill.SkillTags
+            .FirstOrDefault(st => st.Tag.Name == normalized);
+
+        //cant find tag on skill
+        if (skillTag == null)
+            return NoContent();
+
+        skill.SkillTags.Remove(skillTag);
+        await _db.SaveChangesAsync();
+
+        return NoContent();
     }
 }
