@@ -5,9 +5,8 @@ import {
   fetchSkillVersions,
   updateSkillVisibility,
   deleteSkill,
-  addSkillTag,
-  deleteSkillTag,
 } from "../api/skills";
+import { addSkillTag, deleteSkillTag } from "../api/tag";
 import type { SkillDetailsT } from "../types/skill-details";
 import { fetchMe } from "../api/auth";
 import type { TagT } from "../types/tag";
@@ -185,7 +184,7 @@ export default function SkillDetails() {
     return (
       <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate(-1)}
           className="text-sm text-orange-500 hover:underline hover:cursor-pointer"
         >
           ← Back to dashboard
@@ -201,7 +200,7 @@ export default function SkillDetails() {
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
       {/* Back */}
       <button
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(-1)}
         className="mb-4 text-sm text-orange-500 hover:underline hover:cursor-pointer"
       >
         ← Back to dashboard

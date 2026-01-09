@@ -1,50 +1,99 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchMySkills, fetchPublicSkills, uploadSkill } from "../api/skills";
+import { fetchSkills, uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
 import type { SkillCardT } from "../types/skill-card";
 import { setTheme } from "../utils/theme";
 import { useNavigate } from "react-router-dom";
+import { fetchAllTags } from "../api/tag";
+import type { TagT } from "../types/tag";
+import { useSearchParams } from "react-router-dom";
 
 type ViewMode = "private" | "public";
 
-const TAGS_DISPLAYED = 4;
+const TAGS_DISPLAYED = 3;
+const MAX_TAG_FILTERS = 5;
 
 export default function Dashboard() {
-  const [view, setView] = useState<ViewMode>("private");
-  const [skills, setSkills] = useState<SkillCardT[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialView =
+    (searchParams.get("view") as "private" | "public") ?? "private";
+
+  const initialSearch = searchParams.get("search") ?? "";
+
+  const initialTags = searchParams.get("tags")
+    ? searchParams.get("tags")!.split(",").filter(Boolean)
+    : [];
+
+  const [view, setView] = useState<ViewMode>(initialView); // view mode
+  const [skills, setSkills] = useState<SkillCardT[]>([]); // skills list
+  const [loading, setLoading] = useState(false); // loading state
+  const [error, setError] = useState<string | null>(null); // error message
+  const [reloadKey, setReloadKey] = useState(0); // helps with reload skill list after update
+  const [settingsOpen, setSettingsOpen] = useState(false); // settings menu
+  const [username, setUsername] = useState<string | null>(null); // current user
+
+  // theme
   const [theme, setThemeState] = useState<"dark" | "light">(
     (localStorage.getItem("theme") as "dark" | "light") ?? "dark"
   );
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  // search dropdown
+  const [searchOpen, setSearchOpen] = useState(
+    initialSearch.length > 0 || initialTags.length > 0
+  );
+  const [searchName, setSearchName] = useState(initialSearch);
+  const [tagFilterOpen, setTagFilterOpen] = useState(false);
+
+  // tag dropdown
+  const [availableTags, setAvailableTags] = useState<TagT[]>([]);
+  const [tagSearch, setTagSearch] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
+
+  // applied filters (important)
+  const [appliedSearch, setAppliedSearch] = useState(initialSearch);
+  const [appliedTags, setAppliedTags] = useState<string[]>(initialTags);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null); // ref for Add Skill
+  const menuRef = useRef<HTMLDivElement | null>(null); // ref for settings menu
 
   const navigate = useNavigate();
+
+  // update url when search params are applied and depend on view mode
+  function updateUrl(
+    view: "private" | "public",
+    search: string,
+    tags: string[]
+  ) {
+    const params = new URLSearchParams();
+
+    params.set("view", view);
+
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+
+    if (tags.length > 0) {
+      params.set("tags", tags.join(","));
+    }
+
+    setSearchParams(params);
+  }
 
   // fetch user info on mount
   useEffect(() => {
     fetchMe().then((data) => setUsername(data.username));
   }, []);
 
-  // fetch skills based on view mode
   useEffect(() => {
     let active = true;
 
     async function load() {
       setLoading(true);
       setError(null);
-      setSkills([]);
 
       try {
-        const data =
-          view === "private"
-            ? await fetchMySkills()
-            : await fetchPublicSkills();
+        const data = await fetchSkills(view, appliedSearch, appliedTags);
 
         if (active) setSkills(data);
       } catch (err) {
@@ -58,7 +107,7 @@ export default function Dashboard() {
     return () => {
       active = false;
     };
-  }, [view, reloadKey]);
+  }, [view, reloadKey, appliedSearch, appliedTags]);
 
   // close settings menu on outside click
   useEffect(() => {
@@ -77,6 +126,13 @@ export default function Dashboard() {
     };
   }, [settingsOpen]);
 
+  // fetch tags when dropdown open or the search state changes
+  useEffect(() => {
+    if (!tagFilterOpen) return;
+
+    fetchAllTags(tagSearch).then(setAvailableTags).catch(console.error);
+  }, [tagFilterOpen, tagSearch]);
+
   // handle file upload
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -89,7 +145,8 @@ export default function Dashboard() {
 
     try {
       await uploadSkill(file);
-      setView("private"); // ensure added file is initially private
+      setView("private");
+      updateUrl("private", appliedSearch, appliedTags);
       setReloadKey((k) => k + 1);
     } catch (err) {
       alert((err as Error).message);
@@ -208,11 +265,14 @@ export default function Dashboard() {
       </header>
 
       <main className="p-6 flex flex-col flex-1 overflow-hidden">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           {/* Toggle Public/Private */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setView("private")}
+              onClick={() => {
+                setView("private");
+                updateUrl("private", appliedSearch, appliedTags);
+              }}
               className={`rounded-md px-3 py-1 text-xs font-medium transition duration-300 ${
                 view === "private"
                   ? "bg-orange-500 text-white"
@@ -223,7 +283,10 @@ export default function Dashboard() {
             </button>
 
             <button
-              onClick={() => setView("public")}
+              onClick={() => {
+                setView("public");
+                updateUrl("public", appliedSearch, appliedTags);
+              }}
               className={`rounded-md px-3 py-1 text-xs font-medium transition duration-300 ${
                 view === "public"
                   ? "bg-orange-500 text-white"
@@ -235,22 +298,161 @@ export default function Dashboard() {
           </div>
 
           {/* Add Skill */}
-          <button
-            disabled={view === "public"}
-            onClick={() => fileInputRef.current?.click()}
-            className={`rounded-sm px-3 py-1 text-xs font-medium transition duration-300 ${
-              view === "public"
-                ? "bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 opacity-30"
-                : "bg-orange-500 text-white hover:bg-orange-600 hover:cursor-pointer"
-            }`}
-          >
-            Add Skill
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Search toggle */}
+            <button
+              onClick={() => setSearchOpen((o) => !o)}
+              className="p-1 rounded hover:cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 duration-300 transition"
+              aria-label="Search"
+            >
+              {/* Magnifying glass */}
+              <svg
+                className={`h-4 w-4 transition-transform duration-300 ${
+                  searchOpen ? "rotate-90 text-orange-500" : "text-zinc-500"
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M20 20L17 17"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+            {/* Add Skill */}
+            <button
+              disabled={view === "public"}
+              onClick={() => fileInputRef.current?.click()}
+              className={`rounded-sm px-3 py-1 text-xs font-medium transition duration-300 ${
+                view === "public"
+                  ? "bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 opacity-30"
+                  : "bg-orange-500 text-white hover:bg-orange-600 hover:cursor-pointer"
+              }`}
+            >
+              Add Skill
+            </button>
+          </div>
+        </div>
+
+        {/* Search panel */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            searchOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="rounded-md p-2 flex items-center gap-3">
+            {/* Name search */}
+            <input
+              type="text"
+              placeholder="Search skills by name…"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              className="flex-1 min-w-60 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-orange-500 duration-200 caret-amber-500"
+            />
+
+            {/* Tag filter toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setTagFilterOpen((o) => !o)}
+                className="whitespace-nowrap rounded-md border border-zinc-300 dark:border-zinc-700 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:cursor-pointer duration-300 transition"
+              >
+                Filter by tags ▾
+              </button>
+
+              {/* Tag filter dropdown */}
+              {tagFilterOpen && (
+                <div className="z-10 -translate-x-1/2 left-1/2 absolute mt-2 w-50 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 shadow-md">
+                  {/* Tag Search */}
+                  <input
+                    value={tagSearch}
+                    onChange={(e) => setTagSearch(e.target.value)}
+                    placeholder="Search tags..."
+                    className="mb-2 w-full rounded border border-zinc-300 dark:border-zinc-700 outline-none focus:ring-1 focus:ring-orange-500 duration-200 px-2 py-1 text-xs caret-amber-500"
+                  />
+
+                  <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1 text-xs items-center">
+                    {availableTags.length === 0 && (
+                      <div className="text-zinc-400 text-center">
+                        No tags with that name
+                      </div>
+                    )}
+
+                    {availableTags.map((tag) => {
+                      const checked = selectedTags.includes(tag.name);
+                      const disabled =
+                        !checked && selectedTags.length >= MAX_TAG_FILTERS;
+
+                      return (
+                        <label
+                          key={tag.id}
+                          className={`flex items-center gap-2 text-zinc-600 dark:text-zinc-400 ${
+                            disabled ? "" : "cursor-pointer"
+                          }`}
+                        >
+                          <input
+                            className={`accent-orange-500 ${
+                              disabled ? "" : "cursor-pointer"
+                            }`}
+                            type="checkbox"
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={() =>
+                              setSelectedTags((prev) =>
+                                checked
+                                  ? prev.filter((t) => t !== tag.name)
+                                  : [...prev, tag.name]
+                              )
+                            }
+                          />
+                          {tag.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setSearchName("");
+                  setSelectedTags([]);
+                  setAppliedSearch("");
+                  setAppliedTags([]);
+                  updateUrl(view, "", []);
+                }}
+                className="text-xs px-3 py-1 rounded border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:cursor-pointer duration-300"
+              >
+                Clear
+              </button>
+
+              <button
+                onClick={() => {
+                  setAppliedSearch(searchName);
+                  setAppliedTags(selectedTags);
+                  updateUrl(view, searchName, selectedTags);
+                }}
+                className="text-xs px-3 py-1 rounded bg-orange-500 text-white hover:bg-orange-600 hover:cursor-pointer duration-300"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Cards grid */}
         {loading && (
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 duration-300">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 duration-300 ml-2 mt-4">
             Loading skills…
           </p>
         )}
@@ -258,7 +460,7 @@ export default function Dashboard() {
         {error && <p className="text-xs text-red-500">{error}</p>}
 
         {!loading && !error && skills.length === 0 && (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 ml-2 mt-4">
             {view === "private"
               ? "You haven’t uploaded any skills yet."
               : "No public skills available."}

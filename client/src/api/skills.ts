@@ -1,18 +1,10 @@
 import type { SkillCardT } from "../types/skill-card";
 import type { SkillDetailsT } from "../types/skill-details";
-import type { TagT } from "../types/tag";
+import { authHeaders } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 if (!API_BASE) throw new Error("VITE_API_URL is not set");
-
-// JWT token check for authentication
-function authHeaders() {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 // get private skills
 export async function fetchMySkills(): Promise<SkillCardT[]> {
@@ -35,6 +27,36 @@ export async function fetchPublicSkills(): Promise<SkillCardT[]> {
     const text = await res.text();
     throw new Error(text || "Failed to get public skills");
   }
+  return res.json();
+}
+
+export async function fetchSkills(
+  view: "private" | "public",
+  search: string,
+  tags: string[]
+) {
+  const params = new URLSearchParams();
+
+  if (search.trim()) {
+    params.set("search", search.trim());
+  }
+
+  if (tags.length > 0) {
+    params.set("tags", tags.join(","));
+  }
+
+  const base = view === "private" ? "/skills/mine" : "/skills";
+  const url = params.toString() ? `${base}?${params}` : base;
+
+  const res = await fetch(`${API_BASE}${url}`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to fetch skills");
+  }
+
   return res.json();
 }
 
@@ -134,49 +156,4 @@ export async function fetchSkillVersions(id: number) {
   }
 
   return res.json() as Promise<{ versionNumber: number; createdAt: string }[]>;
-}
-
-// get tags of a skill
-export async function fetchSkillTags(skillId: number): Promise<TagT> {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags`, {
-    headers: authHeaders(),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to get skill's tags");
-  }
-  return res.json();
-}
-
-// add new tag to skill
-export async function addSkillTag(skillId: number, tag: string) {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags`, {
-    method: "POST",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ tag }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to add tag");
-  }
-
-  return res.json();
-}
-
-// delete tag of a skill
-export async function deleteSkillTag(skillId: number, tagId: number) {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags/${tagId}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  });
-
-  if (!res.ok && res.status !== 204) {
-    const text = await res.text();
-    throw new Error(text || "Failed to delete skill's tags");
-  }
 }

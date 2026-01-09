@@ -1,5 +1,5 @@
 // mirrors tagDto
-export type Tag = {
+export type TagT = {
   id: number;
   name: string;
 };

@@ -441,9 +441,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
     // get all tags
     [HttpGet("tags")]
     public async Task<IActionResult> GetTags([FromQuery] string? search) {
-        const int MIN_LIMIT = 1;
-        const int MAX_LIMIT = 30;
-        var limit = Math.Clamp(MIN_LIMIT, 1, MAX_LIMIT);
+        const int limit = 30;
 
         var query = _db.Tags.AsQueryable();
 

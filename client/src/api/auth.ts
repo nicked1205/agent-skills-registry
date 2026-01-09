@@ -2,6 +2,14 @@ const API_BASE = import.meta.env.VITE_API_URL as string;
 
 if (!API_BASE) throw new Error("VITE_API_URL is not set");
 
+// JWT token check for authentication
+export function authHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export async function login(
   username: string,
   password: string
