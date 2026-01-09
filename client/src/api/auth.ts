@@ -1,14 +1,8 @@
+import { apiFetch } from "./client";
+
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 if (!API_BASE) throw new Error("VITE_API_URL is not set");
-
-// JWT token check for authentication
-export function authHeaders() {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 export async function login(
   username: string,
@@ -48,13 +42,7 @@ export async function register(
 }
 
 export async function fetchMe() {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API_BASE}/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await apiFetch("/auth/me");
 
   if (!res.ok) {
     const text = await res.text();

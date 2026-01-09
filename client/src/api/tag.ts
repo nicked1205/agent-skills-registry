@@ -1,15 +1,9 @@
 import type { TagT } from "../types/tag";
-import { authHeaders } from "./auth";
-
-const API_BASE = import.meta.env.VITE_API_URL as string;
-
-if (!API_BASE) throw new Error("VITE_API_URL is not set");
+import { apiFetch } from "./client";
 
 // get tags of a skill
 export async function fetchSkillTags(skillId: number): Promise<TagT> {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch(`/skills/${skillId}/tags`);
 
   if (!res.ok) {
     const text = await res.text();
@@ -20,12 +14,8 @@ export async function fetchSkillTags(skillId: number): Promise<TagT> {
 
 // add new tag to skill
 export async function addSkillTag(skillId: number, tag: string) {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags`, {
+  const res = await apiFetch(`/skills/${skillId}/tags`, {
     method: "POST",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ tag }),
   });
 
@@ -39,9 +29,8 @@ export async function addSkillTag(skillId: number, tag: string) {
 
 // delete tag of a skill
 export async function deleteSkillTag(skillId: number, tagId: number) {
-  const res = await fetch(`${API_BASE}/skills/${skillId}/tags/${tagId}`, {
+  const res = await apiFetch(`/skills/${skillId}/tags/${tagId}`, {
     method: "DELETE",
-    headers: authHeaders(),
   });
 
   if (!res.ok && res.status !== 204) {
@@ -54,9 +43,7 @@ export async function deleteSkillTag(skillId: number, tagId: number) {
 export async function fetchAllTags(search?: string) {
   const qs = search ? `?search=${encodeURIComponent(search)}` : "";
 
-  const res = await fetch(`${API_BASE}/skills/tags${qs}`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch(`/skills/tags${qs}`);
 
   if (!res.ok) {
     const text = await res.text();

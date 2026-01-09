@@ -1,16 +1,10 @@
 import type { SkillCardT } from "../types/skill-card";
 import type { SkillDetailsT } from "../types/skill-details";
-import { authHeaders } from "./auth";
-
-const API_BASE = import.meta.env.VITE_API_URL as string;
-
-if (!API_BASE) throw new Error("VITE_API_URL is not set");
+import { apiFetch } from "./client";
 
 // get private skills
 export async function fetchMySkills(): Promise<SkillCardT[]> {
-  const res = await fetch(`${API_BASE}/skills/mine`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch("skills/mine");
 
   if (!res.ok) {
     const text = await res.text();
@@ -21,7 +15,7 @@ export async function fetchMySkills(): Promise<SkillCardT[]> {
 
 // GET public skills
 export async function fetchPublicSkills(): Promise<SkillCardT[]> {
-  const res = await fetch(`${API_BASE}/skills`);
+  const res = await apiFetch("/skills");
 
   if (!res.ok) {
     const text = await res.text();
@@ -48,9 +42,7 @@ export async function fetchSkills(
   const base = view === "private" ? "/skills/mine" : "/skills";
   const url = params.toString() ? `${base}?${params}` : base;
 
-  const res = await fetch(`${API_BASE}${url}`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch(`${url}`);
 
   if (!res.ok) {
     const text = await res.text();
@@ -65,9 +57,8 @@ export async function uploadSkill(file: File): Promise<void> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE}/skills`, {
+  const res = await apiFetch(`/skills`, {
     method: "POST",
-    headers: authHeaders(),
     body: formData,
   });
 
@@ -79,9 +70,7 @@ export async function uploadSkill(file: File): Promise<void> {
 
 // get skill details by id
 export async function fetchSkillById(id: number): Promise<SkillDetailsT> {
-  const res = await fetch(`${API_BASE}/skills/${id}`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch(`/skills/${id}`);
 
   if (!res.ok) {
     const text = await res.text();
@@ -96,12 +85,8 @@ export async function updateSkillVisibility(
   id: number,
   isPublic: boolean
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/skills/${id}/visibility`, {
+  const res = await apiFetch(`/skills/${id}/visibility`, {
     method: "PATCH",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ isPublic }),
   });
 
@@ -113,9 +98,8 @@ export async function updateSkillVisibility(
 
 // delete skill file and all of its history
 export async function deleteSkill(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/skills/${id}`, {
+  const res = await apiFetch(`/skills/${id}`, {
     method: "DELETE",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -129,12 +113,8 @@ export async function createSkillVersion(
   id: number,
   rawContent: string
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/skills/${id}/versions`, {
+  const res = await apiFetch(`/skills/${id}/versions`, {
     method: "POST",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ rawContent }),
   });
 
@@ -146,9 +126,7 @@ export async function createSkillVersion(
 
 // get all skill versions
 export async function fetchSkillVersions(id: number) {
-  const res = await fetch(`${API_BASE}/skills/${id}/versions`, {
-    headers: authHeaders(),
-  });
+  const res = await apiFetch(`/skills/${id}/versions`);
 
   if (!res.ok) {
     const text = await res.text();
