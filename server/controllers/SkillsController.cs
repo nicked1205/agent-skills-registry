@@ -325,14 +325,15 @@ public class SkillsController(AppDbContext db) : ControllerBase
             return NotFound();
 
         var tags = skill.SkillTags
-            .Select(st => st.Tag.Name)
-            .OrderBy(t => t)
+            .Select(st => new TagDto(st.TagId, st.Tag.Name))
+            .OrderBy(t => t.Name)
             .ToList();
 
         return Ok(tags);
     }
 
     // add a tag to a skill owned by the authenticated user
+    [Authorize]
     [HttpPost("{id:int}/tags")]
     public async Task<IActionResult> AddTag(
         int id,
@@ -388,16 +389,14 @@ public class SkillsController(AppDbContext db) : ControllerBase
     }
 
     // remove a tag from a skill owned by the authenticated user
-    [HttpDelete("{id:int}/tags/{tag}")]
-    public async Task<IActionResult> RemoveTag(int id, string tag)
-    {   
-        // normalize tag name in BE in case frontend misses something
+    [Authorize]
+    [HttpDelete("{id:int}/tags/{tagId:int}")]
+    public async Task<IActionResult> RemoveTag(int id, int tagId)
+    {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var normalized = tag.Trim().ToLowerInvariant();
 
         var skill = await _db.Skills
             .Include(s => s.SkillTags)
-            .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (skill == null)
@@ -407,9 +406,8 @@ public class SkillsController(AppDbContext db) : ControllerBase
             return Forbid();
 
         var skillTag = skill.SkillTags
-            .FirstOrDefault(st => st.Tag.Name == normalized);
+            .FirstOrDefault(st => st.TagId == tagId);
 
-        //cant find tag on skill
         if (skillTag == null)
             return NoContent();
 
