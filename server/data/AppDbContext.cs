@@ -3,11 +3,9 @@ using server.models;
 
 namespace server.data;
 
-public class AppDbContext : DbContext
-{
+public class AppDbContext : DbContext {
     public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
+        : base(options) {
         
     }
 
@@ -17,8 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<SkillTag> SkillTags => Set<SkillTag>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
         // unique username

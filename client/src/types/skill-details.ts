@@ -1,7 +1,7 @@
-import type { Tag } from "./tag";
+import type { TagT } from "./tag";
 
 // mirrors skillDetailsDto
-export type SkillDetails = {
+export type SkillDetailsT = {
   id: number;
   name: string;
   description: string;
@@ -10,5 +10,5 @@ export type SkillDetails = {
   content: string;
   updatedAt: string;
   isPublic: boolean;
-  tags: Tag[];
+  tags: TagT[];
 };

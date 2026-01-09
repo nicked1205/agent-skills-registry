@@ -17,6 +17,8 @@ obj/
 
 app.db
 *.db
+*.db-wal
+*.db-shm
 
 .env.*
 !.env.example

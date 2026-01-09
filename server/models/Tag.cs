@@ -2,8 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace server.models;
 
-public class Tag
-{
+public class Tag {
     public int Id { get; set; }
 
     [Required]

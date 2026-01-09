@@ -2,8 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace server.models;
 
-public class Skill
-{
+public class Skill {
     public int Id { get; set; }
 
     public int OwnerId { get; set; }

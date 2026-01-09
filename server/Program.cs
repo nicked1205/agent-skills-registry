@@ -9,12 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
-{
+builder.Services.AddSwaggerGen(options => {
     options.SwaggerDoc("v1", new() { Title = "API", Version = "v1" });
 
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
         Name = "Authorization",
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
         Scheme = "bearer",
@@ -23,11 +21,8 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Enter: {your JWT token}"
     });
 
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {{
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
                 Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
                     Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
@@ -48,10 +43,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}")
 );
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowFrontend", policy => {
         policy
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
@@ -64,20 +57,16 @@ var key = Encoding.UTF8.GetBytes(jwtConfig["Key"]!);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
+    .AddJwtBearer(options => {
+        options.Events = new JwtBearerEvents {
+            OnAuthenticationFailed = context => {
                 Console.WriteLine("JWT AUTH FAILED:");
                 Console.WriteLine(context.Exception.ToString());
                 return Task.CompletedTask;
             }
         };
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
+        options.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
@@ -94,14 +83,12 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
+using (var scope = app.Services.CreateScope()) {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 }
 
-if (app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }

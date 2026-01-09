@@ -13,37 +13,29 @@ namespace server.controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthController(AppDbContext db, IConfiguration config) : ControllerBase
-{
+public class AuthController(AppDbContext db, IConfiguration config) : ControllerBase {
     private readonly AppDbContext _db = db;
     private readonly IConfiguration _config = config;
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] AuthRequest request)
-    {
-        if (await _db.Users.AnyAsync(u => u.Username == request.Username))
-            return BadRequest("Username already exists");
+    public async Task<IActionResult> Register([FromBody] AuthRequest request) {
+        if (await _db.Users.AnyAsync(u => u.Username == request.Username)) return BadRequest("Username already exists");
 
-        try
-        {
+        try {
             UsernameValidator.Validate(request.Username);
         }
-        catch (ArgumentException ex)
-        {
+        catch (ArgumentException ex) {
             return BadRequest(ex.Message);
         }
 
-        try
-        {
+        try {
             PasswordValidator.Validate(request.Password);
         }
-        catch (ArgumentException ex)
-        {
+        catch (ArgumentException ex) {
             return BadRequest(ex.Message);
         }
 
-        var user = new User
-        {
+        var user = new User {
             Username = request.Username,
             PasswordHash = PasswordHasher.HashPassword(request.Password)
         };
@@ -55,14 +47,11 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] AuthRequest request)
-    {
+    public async Task<IActionResult> Login([FromBody] AuthRequest request) {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-        if (user == null)
-            return Unauthorized();
+        if (user == null) return Unauthorized();
 
-        if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash))
-            return Unauthorized();
+        if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash)) return Unauthorized();
 
         var token = GenerateJwt(user);
         return Ok(new { token });
@@ -70,18 +59,15 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
     [Authorize]
     [HttpGet("me")]
-    public IActionResult Me()
-    {
+    public IActionResult Me() {
         var username = User.Identity?.Name;
 
-        if (username == null)
-            return Unauthorized();
+        if (username == null) return Unauthorized();
 
         return Ok(new { username });
     }
 
-    private string GenerateJwt(User user)
-    {
+    private string GenerateJwt(User user) {
         var jwtConfig = _config.GetSection("Jwt");
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtConfig["Key"]!)
@@ -89,8 +75,7 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
-        {
+        var claims = new[] {
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };

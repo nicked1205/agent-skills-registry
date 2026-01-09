@@ -2,8 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace server.models;
 
-public class User
-{
+public class User {
     [Key]
     public int Id { get; set; }
     
