@@ -1,5 +1,6 @@
 namespace server.dtos;
 
+// match skill-card.ts in the frontend
 public record SkillCardDto(
     int Id,
     string Name,
@@ -8,5 +9,7 @@ public record SkillCardDto(
     int LatestVersion,
     DateTimeOffset UpdatedAt,
     List<TagDto> Tags,
-    bool IsPublic
+    bool IsPublic,
+    bool IsCloned,
+    string? ClonedFromUsername
 );

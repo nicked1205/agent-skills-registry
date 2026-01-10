@@ -115,7 +115,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                     .OrderBy(st => st.Tag.Name)
                     .Select(st => new TagDto(st.TagId, st.Tag.Name))
                     .ToList(),
-                s.IsPublic
+                s.IsPublic,
+                s.IsCloned,
+                s.ClonedFromUsername
             ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
@@ -124,8 +126,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         return Ok(skills);
     }
 
-    // get all public skills (anonymous access allowed)
-    [AllowAnonymous]
+    // get all public skills (auth required to view)
     [HttpGet]
     public async Task<IActionResult> GetSkills(
         [FromQuery] string? search,
@@ -172,7 +173,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                     .OrderBy(st => st.Tag.Name)
                     .Select(st => new TagDto(st.TagId, st.Tag.Name))
                     .ToList(),
-                s.IsPublic
+                s.IsPublic,
+                s.IsCloned,
+                s.ClonedFromUsername
             ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
@@ -218,6 +221,8 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         if (skill == null) return NotFound();
 
         if (skill.OwnerId != userId) return Forbid();
+        
+        if (skill.IsCloned && request.IsPublic) return BadRequest("Cloned skills cannot be made public.");
 
         skill.IsPublic = request.IsPublic;
         skill.UpdatedAt = DateTimeOffset.UtcNow;
@@ -249,20 +254,22 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .OrderByDescending(v => v.VersionNumber)
             .FirstOrDefault();
 
-        var dto = new SkillDetailsDto {
-            Id = skill.Id,
-            Name = skill.Name,
-            Description = skill.Description,
-            IsPublic = skill.IsPublic,
-            OwnerUsername = skill.Owner.Username,
-            LatestVersion = latestVersion?.VersionNumber ?? 1,
-            Content = latestVersion?.Content ?? string.Empty,
-            UpdatedAt = skill.UpdatedAt,
-            Tags = skill.SkillTags
+        var dto = new SkillDetailsDto(
+            skill.Id,
+            skill.Name,
+            skill.Description,
+            skill.IsPublic,
+            skill.Owner.Username,
+            latestVersion?.VersionNumber ?? 1,
+            latestVersion?.Content ?? string.Empty,
+            skill.UpdatedAt,
+            skill.SkillTags
                 .OrderBy(st => st.Tag.Name)
                 .Select(st => new TagDto(st.TagId, st.Tag.Name))
-                .ToList()
-        };
+                .ToList(),
+            skill.IsCloned,
+            skill.ClonedFromUsername
+        );
 
         return Ok(dto);
     }
@@ -457,5 +464,75 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .ToListAsync();
 
         return Ok(tags);
+    }
+
+    // clone a public skill into the authenticated user's private library
+    [HttpPost("{id:int}/clone")]
+    public async Task<IActionResult> CloneSkill(int id) {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var sourceSkill = await _db.Skills
+            .Include(s => s.Owner)
+            .Include(s => s.Versions)
+            .Include(s => s.SkillTags)
+                .ThenInclude(st => st.Tag)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (sourceSkill == null) return NotFound();
+
+        // must be public
+        if (!sourceSkill.IsPublic) return Forbid();
+
+        // probably not gonna happen because cloned skills can be public but just in case
+        if (sourceSkill.IsCloned) return BadRequest("Cloned skills cannot be cloned again.");
+
+        // prevent cloning your own skill
+        if (sourceSkill.OwnerId == userId) return BadRequest("You cannot clone your own skill.");
+
+        var latestVersion = sourceSkill.Versions
+            .OrderByDescending(v => v.VersionNumber)
+            .FirstOrDefault();
+
+        if (latestVersion == null) return BadRequest("Source skill has no versions.");
+
+        var clonedSkill = new Skill {
+            OwnerId = userId,
+            Name = sourceSkill.Name,
+            Description = sourceSkill.Description,
+            AllowedTools = sourceSkill.AllowedTools,
+            IsPublic = false, // automatically private
+            IsCloned = true,
+            ClonedFromUsername = sourceSkill.Owner.Username,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        _db.Skills.Add(clonedSkill);
+        await _db.SaveChangesAsync();
+
+        // only clone the latest version as v1 of new skill
+        var version = new SkillVersion {
+            SkillId = clonedSkill.Id,
+            VersionNumber = 1,
+            Content = latestVersion.Content,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        _db.SkillVersions.Add(version);
+
+        // copy tags
+        foreach (var st in sourceSkill.SkillTags) {
+            clonedSkill.SkillTags.Add(new SkillTag {
+                SkillId = clonedSkill.Id,
+                TagId = st.TagId
+            });
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new {
+            clonedSkill.Id,
+            clonedSkill.Name
+        });
     }
 }

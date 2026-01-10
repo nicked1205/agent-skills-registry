@@ -25,4 +25,8 @@ public class Skill {
 
     public List<SkillVersion> Versions { get; set; } = [];
     public List<SkillTag> SkillTags { get; set; } = [];
+
+    public bool IsCloned { get; set; } = false;
+    [MaxLength(100)]
+    public string? ClonedFromUsername { get; set; }
 }
