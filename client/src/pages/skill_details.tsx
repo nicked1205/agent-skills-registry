@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchSkillById, deleteSkill } from "../api/skills";
-import type { SkillDetailsT } from "../types";
+import type { SkillDetailsT, SkillVersionT } from "../types";
 import { fetchMe } from "../api/auth";
 import type { TagT } from "../types";
 import SkillDetailsHeader from "../components/skill-details/SkillDetailsHeader";
 import MarkdownViewer from "../components/skill-details/MarkdownViewer";
 import SkillTags from "../components/skill-details/SkillTags";
+import SkillDiffViewer from "../components/skill-details/SkillDiffViewer";
 
 type SkillDetails = {
   id: number;
@@ -27,12 +28,22 @@ export default function SkillDetails() {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tags, setTags] = useState<TagT[]>([]);
+  const [versions, setVersions] = useState<SkillVersionT[]>([]);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const location = useLocation();
   const fromDashboardState =
     (location.state as { from?: string })?.from ?? "?view=private"; // go back to the dashboard it comes from, else fall back to private view
+
+  // params for diffchecker mode\
+  const params = new URLSearchParams(location.search);
+  const fromParam = params.get("from");
+  const toParam = params.get("to");
+  const from = fromParam ? Number(fromParam) : null;
+  const to = toParam ? Number(toParam) : null;
+  const isDiffMode = from !== null && to !== null;
 
   const isOwner = username?.username === skill?.ownerUsername;
 
@@ -77,6 +88,15 @@ export default function SkillDetails() {
     }
   }
 
+  function updateDiffParams(next: { from?: number; to?: number }) {
+    const p = new URLSearchParams(location.search);
+
+    if (next.from !== undefined) p.set("from", String(next.from));
+    if (next.to !== undefined) p.set("to", String(next.to));
+
+    navigate({ search: p.toString() }, { replace: true });
+  }
+
   // loading state
   if (loading) {
     return <div className="p-6 text-sm text-zinc-500">Loading skill…</div>;
@@ -114,9 +134,22 @@ export default function SkillDetails() {
           isOwner={isOwner}
           setSkill={setSkill}
           setShowDeleteConfirm={setShowDeleteConfirm}
+          versions={versions}
+          setVersions={setVersions}
         />
 
-        <MarkdownViewer skill={skill} />
+        {isDiffMode ? (
+          <SkillDiffViewer
+            skillId={skill.id}
+            versions={versions}
+            from={from}
+            to={to}
+            onChangeFrom={(v) => updateDiffParams({ from: v })}
+            onChangeTo={(v) => updateDiffParams({ to: v })}
+          />
+        ) : (
+          <MarkdownViewer skill={skill} />
+        )}
 
         <SkillTags
           skill={skill}

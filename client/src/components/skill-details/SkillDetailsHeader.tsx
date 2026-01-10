@@ -1,12 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import type { SkillDetailsT } from "../../types";
+import type { SkillDetailsT, SkillVersionT } from "../../types";
 import {
   cloneSkill,
   fetchSkillById,
   fetchSkillVersions,
   updateSkillVisibility,
 } from "../../api/skills";
-import type { SkillVersionT } from "../../types";
 import { useEffect, useRef, useState } from "react";
 import { CloneIcon, DownloadIcon } from "../../icons";
 
@@ -15,6 +14,8 @@ export interface Props {
   isOwner: boolean;
   setSkill: React.Dispatch<React.SetStateAction<SkillDetailsT | null>>;
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
+  versions: SkillVersionT[];
+  setVersions: React.Dispatch<React.SetStateAction<SkillVersionT[]>>;
 }
 
 export default function SkillDetailsHeader({
@@ -22,10 +23,11 @@ export default function SkillDetailsHeader({
   setSkill,
   isOwner,
   setShowDeleteConfirm,
+  versions,
+  setVersions,
 }: Props) {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
-  const [versions, setVersions] = useState<SkillVersionT[]>([]);
 
   const versionsRef = useRef<HTMLDivElement | null>(null);
 
@@ -34,12 +36,12 @@ export default function SkillDetailsHeader({
 
   const navigate = useNavigate();
 
-  // fetch versions whenever versions is toggle
+  // fetch versions whenever skill changes
   useEffect(() => {
-    if (!showVersions || !skill) return;
+    if (!skill) return;
 
     fetchSkillVersions(skill.id).then(setVersions).catch(console.error);
-  }, [showVersions, skill]);
+  }, [skill, setVersions]);
 
   // close versions modal when clicking outside
   useEffect(() => {
@@ -158,22 +160,30 @@ export default function SkillDetailsHeader({
                           </div>
                         ) : (
                           versions.map((v) => (
-                            <div
+                            <button
                               key={v.versionNumber}
-                              className="flex justify-between px-3 py-2 text-zinc-700 dark:text-zinc-300"
+                              onClick={() => {
+                                navigate(
+                                  `/skills/${skill.id}?from=${v.versionNumber}&to=${skill.latestVersion}`
+                                );
+                                setShowVersions(false);
+                              }}
+                              className="w-full text-left px-3 py-2 select-option"
                             >
-                              <span>
-                                v{v.versionNumber}
-                                {v.versionNumber === skill.latestVersion && (
-                                  <span className="ml-2 text-xs text-orange-500">
-                                    Latest
-                                  </span>
-                                )}
-                              </span>
-                              <span className="text-xs text-zinc-500">
-                                {new Date(v.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
+                              <div className="flex justify-between">
+                                <span>
+                                  v{v.versionNumber}
+                                  {v.versionNumber === skill.latestVersion && (
+                                    <span className="ml-2 text-xs text-orange-500">
+                                      Latest
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-xs text-zinc-500">
+                                  {new Date(v.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </button>
                           ))
                         )}
                       </div>

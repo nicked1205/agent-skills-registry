@@ -25,3 +25,14 @@
   scrollbar-width: thin;
   scrollbar-color: rgb(255, 105, 0, 0.5) transparent;
 }
+
+/* highlight color change */
+@layer base {
+  ::selection {
+    @apply bg-orange-200 text-orange-900;
+  }
+
+  .dark ::selection {
+    @apply bg-orange-900 text-orange-200;
+  }
+}

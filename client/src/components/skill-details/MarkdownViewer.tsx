@@ -30,7 +30,7 @@ export default function MarkdownViewer({ skill }: Props) {
   return (
     <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 px-3 py-2">
+      <div className="flex items-center justify-between bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 px-5 py-2">
         <span className="text-xs font-mono opacity-80">markdown</span>
 
         <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">

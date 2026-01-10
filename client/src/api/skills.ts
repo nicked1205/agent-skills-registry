@@ -159,3 +159,19 @@ export async function downloadSkill(id: number) {
 
   return res.blob();
 }
+
+// get diffs between 2 skill versions
+export async function fetchSkillDiff(
+  skillId: number,
+  from: number,
+  to: number
+) {
+  const res = await apiFetch(`/skills/${skillId}/diff?from=${from}&to=${to}`);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to get diffs");
+  }
+
+  return res.json();
+}

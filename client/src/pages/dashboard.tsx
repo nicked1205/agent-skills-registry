@@ -6,7 +6,7 @@ import type { TagT } from "../types";
 import { useSearchParams } from "react-router-dom";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SkillGrid from "../components/dashboard/SkillGrid";
-import { SearchIcon } from "../icons";
+import { ArrowUpIcon, SearchIcon } from "../icons";
 
 type ViewMode = "private" | "public";
 
@@ -199,30 +199,7 @@ export default function Dashboard() {
               >
                 Filter by tags{" "}
                 <span className={`p-0.75 ${tagFilterOpen ? "rotate-180" : ""}`}>
-                  <svg
-                    className="h-3 w-3 fill-zinc-600 dark:fill-zinc-400"
-                    viewBox="0 0 16 16"
-                    version="1.1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="#000000"
-                  >
-                    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                    <g
-                      id="SVGRepo_tracerCarrier"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    ></g>
-                    <g id="SVGRepo_iconCarrier">
-                      {" "}
-                      <rect
-                        width="16"
-                        height="16"
-                        id="icon-bound"
-                        fill="none"
-                      ></rect>{" "}
-                      <polygon points="8,5 13,10 3,10"></polygon>{" "}
-                    </g>
-                  </svg>
+                  <ArrowUpIcon className="h-3 w-3 fill-zinc-600 dark:fill-zinc-400" />
                 </span>
               </button>
 
