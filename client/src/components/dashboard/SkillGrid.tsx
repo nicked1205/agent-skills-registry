@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { SkillCardT } from "../../types/skillCardT";
+import type { SkillCardT } from "../../types";
 import { fetchSkills } from "../../api/skills";
 import SkillCard from "../dashboard/SkillCard";
 

@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import type { SkillDetailsT } from "../../types/skillDetailsT";
+import type { SkillDetailsT } from "../../types";
 import {
   cloneSkill,
   fetchSkillById,
   fetchSkillVersions,
   updateSkillVisibility,
 } from "../../api/skills";
-import type { SkillVersionT } from "../../types/SkillVersionT";
+import type { SkillVersionT } from "../../types";
 import { useEffect, useRef, useState } from "react";
+import { CloneIcon, DownloadIcon } from "../../icons";
 
 export interface Props {
   skill: SkillDetailsT;
@@ -193,40 +194,56 @@ export default function SkillDetailsHeader({
         </div>
 
         {/* Skill Info */}
-        <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500">
-          <span>
-            {skill.isCloned ? (
-              <>
-                Cloned from{" "}
-                <span className="font-medium inline-block max-w-[15vw] truncate align-middle">
-                  {skill.clonedFromUsername}
-                </span>
-              </>
-            ) : (
-              <>
-                Posted by{" "}
-                <span className="font-medium inline-block max-w-[15vw] truncate align-middle">
-                  {skill.ownerUsername}
-                </span>
-              </>
-            )}
-          </span>
-          <span>•</span>
-          <span>v{skill.latestVersion}</span>
-          <span>•</span>
-          <span>{skill.isPublic ? "Public" : "Private"}</span>
-          <span>•</span>
-          <span>
-            Last updated{" "}
-            {new Date(skill.updatedAt).toLocaleString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            })}
-          </span>
+        <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500 justify-between">
+          {/* Metadata */}
+          <div className="flex flex-wrap gap-2">
+            <span>
+              {skill.isCloned ? (
+                <>
+                  Cloned from{" "}
+                  <span className="font-medium inline-block max-w-[15vw] truncate align-bottom">
+                    {skill.clonedFromUsername}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Posted by{" "}
+                  <span className="font-medium inline-block max-w-[15vw] truncate align-bottom">
+                    {skill.ownerUsername}
+                  </span>
+                </>
+              )}
+            </span>
+            <span>•</span>
+            <span>v{skill.latestVersion}</span>
+            <span>•</span>
+            <span>{skill.isPublic ? "Public" : "Private"}</span>
+            <span>•</span>
+            <span>
+              Last updated{" "}
+              {new Date(skill.updatedAt).toLocaleString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
+            </span>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-zinc-500">
+            <div className="flex items-center gap-1">
+              <DownloadIcon className="h-3.5 w-3.5" />
+              <span>{skill.downloadCount}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <CloneIcon className="h-3.5 w-3.5" />
+              <span>{skill.cloneCount}</span>
+            </div>
+          </div>
         </div>
       </div>
 

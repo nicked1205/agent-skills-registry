@@ -2,10 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
 import { fetchAllTags } from "../api/tag";
-import type { TagT } from "../types/tagT";
+import type { TagT } from "../types";
 import { useSearchParams } from "react-router-dom";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SkillGrid from "../components/dashboard/SkillGrid";
+import { SearchIcon } from "../icons";
 
 type ViewMode = "private" | "public";
 
@@ -152,28 +153,11 @@ export default function Dashboard() {
               className="p-1 rounded hover:cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 duration-300 transition"
               aria-label="Search"
             >
-              {/* Magnifying glass */}
-              <svg
+              <SearchIcon
                 className={`h-4 w-4 transition-transform duration-300 ${
                   searchOpen ? "rotate-90 text-orange-500" : "text-zinc-500"
                 }`}
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M20 20L17 17"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              />
             </button>
 
             {/* Add Skill */}

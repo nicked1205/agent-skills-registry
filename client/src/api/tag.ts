@@ -1,4 +1,4 @@
-import type { TagT } from "../types/TagT";
+import type { TagT } from "../types";
 import { apiFetch } from "./client";
 
 // get tags of a skill

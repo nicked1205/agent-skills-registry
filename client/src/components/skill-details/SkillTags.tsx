@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { addSkillTag, deleteSkillTag } from "../../api/tag";
-import type { SkillDetailsT } from "../../types/skillDetailsT";
-import type { TagT } from "../../types/tagT";
+import type { SkillDetailsT } from "../../types";
+import type { TagT } from "../../types";
 
 export interface Props {
   isOwner: boolean;

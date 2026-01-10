@@ -48,6 +48,10 @@ export default function Register() {
       return "Password must be at least 8 characters long";
     }
 
+    if (!/[a-zA-Z]/.test(password)) {
+      return "Password must contain at least one letter";
+    }
+
     if (!/\d/.test(password)) {
       return "Password must contain at least one digit";
     }

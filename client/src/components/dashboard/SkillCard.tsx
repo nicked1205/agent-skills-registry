@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import type { SkillCardT } from "../../types/skillCardT";
+import type { SkillCardT } from "../../types";
+import { CloneIcon, DownloadIcon } from "../../icons";
 
 interface Props {
   skill: SkillCardT;
@@ -36,10 +37,30 @@ export default function SkillCard({ skill, username }: Props) {
         {skill.description}
       </p>
 
-      <div className="mt-auto flex justify-between text-xs text-zinc-500">
-        <span>v{skill.latestVersion}</span>
-        <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+      <div className="mt-auto flex items-center justify-between text-xs text-zinc-500">
+        {/* Metadata */}
+        <div className="flex items-center gap-2">
+          <span>v{skill.latestVersion}</span>
+          <span>•</span>
+          <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+        </div>
+
+        {/* Stats */}
+        {!skill.isCloned && (
+          <div className="flex items-center gap-3 text-zinc-500">
+            <div className="flex items-center gap-1">
+              <DownloadIcon className="h-3.5 w-3.5" />
+              <span>{skill.downloadCount}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <CloneIcon className="h-3.5 w-3.5" />
+              <span>{skill.cloneCount}</span>
+            </div>
+          </div>
+        )}
       </div>
+
       {/* Tags row */}
       {skill.tags.length > 0 && (
         <div className="mt-2 flex items-center text-[11px] text-zinc-500">

@@ -1,4 +1,4 @@
-import type { TagT } from "./TagT";
+import type { TagT } from "../types";
 
 // mirrors skillCardsDto
 export type SkillCardT = {
@@ -12,4 +12,6 @@ export type SkillCardT = {
   isPublic: boolean;
   isCloned: boolean;
   clonedFromUsername: string | null;
+  cloneCount: number;
+  downloadCount: number;
 };

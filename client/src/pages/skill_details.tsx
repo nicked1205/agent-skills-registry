@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchSkillById, deleteSkill } from "../api/skills";
-import type { SkillDetailsT } from "../types/skillDetailsT";
+import type { SkillDetailsT } from "../types";
 import { fetchMe } from "../api/auth";
-import type { TagT } from "../types/tagT";
+import type { TagT } from "../types";
 import SkillDetailsHeader from "../components/skill-details/SkillDetailsHeader";
 import MarkdownViewer from "../components/skill-details/MarkdownViewer";
 import SkillTags from "../components/skill-details/SkillTags";

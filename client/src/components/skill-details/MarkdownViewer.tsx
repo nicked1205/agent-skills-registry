@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { SkillDetailsT } from "../../types/skillDetailsT";
+import type { SkillDetailsT } from "../../types";
+import { downloadSkill } from "../../api/skills";
 
 export interface Props {
   skill: SkillDetailsT;
@@ -7,6 +8,24 @@ export interface Props {
 
 export default function MarkdownViewer({ skill }: Props) {
   const [copied, setCopied] = useState(false);
+
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadSkill(skill.id);
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${skill.name}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  };
 
   return (
     <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
@@ -40,17 +59,7 @@ export default function MarkdownViewer({ skill }: Props) {
           </button>
 
           <button
-            onClick={() => {
-              const blob = new Blob([skill.content], {
-                type: "text/markdown",
-              });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `${skill.name}.md`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
+            onClick={handleDownload}
             className="text-xs hover:underline hover:cursor-pointer"
           >
             Download
