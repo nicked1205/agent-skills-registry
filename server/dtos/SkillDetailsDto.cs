@@ -12,5 +12,7 @@ public record SkillDetailsDto(
     DateTimeOffset UpdatedAt,
     List<TagDto> Tags,
     bool IsCloned,
-    string? ClonedFromUsername
+    string? ClonedFromUsername,
+    int CloneCount,
+    int DownloadCount
 );

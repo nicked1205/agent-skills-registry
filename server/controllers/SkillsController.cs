@@ -6,6 +6,7 @@ using server.models;
 using server.services;
 using System.Security.Claims;
 using server.dtos;
+using System.Text;
 
 namespace server.controllers;
 
@@ -117,7 +118,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                     .ToList(),
                 s.IsPublic,
                 s.IsCloned,
-                s.ClonedFromUsername
+                s.ClonedFromUsername,
+                s.CloneCount,
+                s.DownloadCount
             ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
@@ -175,7 +178,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                     .ToList(),
                 s.IsPublic,
                 s.IsCloned,
-                s.ClonedFromUsername
+                s.ClonedFromUsername,
+                s.CloneCount,
+                s.DownloadCount
             ))
             .ToListAsync())
             .OrderByDescending(s => s.UpdatedAt)
@@ -268,7 +273,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 .Select(st => new TagDto(st.TagId, st.Tag.Name))
                 .ToList(),
             skill.IsCloned,
-            skill.ClonedFromUsername
+            skill.ClonedFromUsername,
+            skill.CloneCount,
+            skill.DownloadCount
         );
 
         return Ok(dto);
@@ -510,6 +517,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         _db.Skills.Add(clonedSkill);
         await _db.SaveChangesAsync();
 
+        sourceSkill.CloneCount += 1;
+        await _db.SaveChangesAsync();
+
         // only clone the latest version as v1 of new skill
         var version = new SkillVersion {
             SkillId = clonedSkill.Id,
@@ -534,5 +544,35 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             clonedSkill.Id,
             clonedSkill.Name
         });
+    }
+
+    [HttpGet("{id:int}/download")]
+    public async Task<IActionResult> DownloadSkill(int id) {
+        var skill = await _db.Skills
+            .Include(s => s.Versions)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null) return NotFound();
+
+        // public skills can be downloaded by anyone while only owner for privates
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+
+        var latestVersion = skill.Versions
+            .OrderByDescending(v => v.VersionNumber)
+            .FirstOrDefault();
+
+        if (latestVersion == null) return BadRequest("Skill has no content.");
+
+        // only increase download count when public skill is downloaded by someone else
+        if (skill.IsPublic && skill.OwnerId != userId) {
+            skill.DownloadCount += 1;
+            await _db.SaveChangesAsync();
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(latestVersion.Content);
+        var fileName = $"{skill.Name}.md";
+
+        return File(bytes, "text/markdown", fileName);
     }
 }

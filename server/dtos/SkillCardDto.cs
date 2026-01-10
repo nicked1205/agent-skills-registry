@@ -11,5 +11,7 @@ public record SkillCardDto(
     List<TagDto> Tags,
     bool IsPublic,
     bool IsCloned,
-    string? ClonedFromUsername
+    string? ClonedFromUsername,
+    int CloneCount,
+    int DownloadCount
 );

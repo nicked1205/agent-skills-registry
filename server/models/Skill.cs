@@ -29,4 +29,7 @@ public class Skill {
     public bool IsCloned { get; set; } = false;
     [MaxLength(100)]
     public string? ClonedFromUsername { get; set; }
+
+    public int CloneCount { get; set; } = 0;
+    public int DownloadCount { get; set; } = 0;
 }
