@@ -575,4 +575,47 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
         return File(bytes, "text/markdown", fileName);
     }
+
+    // get diff between two versions of a skill
+    [HttpGet("{id:int}/diff")]
+    public async Task<IActionResult> GetSkillDiff(
+        int id,
+        [FromQuery] int from,
+        [FromQuery] int to)
+    {
+        if (from == to) return Ok(new VersionsDiffDto(from, to, []));
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var skill = await _db.Skills
+            .Include(s => s.Versions)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+        if (skill == null) return NotFound();
+
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+
+        var fromVersion = skill.Versions.FirstOrDefault(v => v.VersionNumber == from);
+        var toVersion = skill.Versions.FirstOrDefault(v => v.VersionNumber == to);
+
+        if (fromVersion == null || toVersion == null) return BadRequest("Invalid version numbers.");
+
+        var diff = DiffCheckerService.DiffLines(
+            fromVersion.Content,
+            toVersion.Content
+        );
+
+        var dto = new VersionsDiffDto(
+            from,
+            to,
+            diff.Select(d => new DiffLineDto(
+                d.type,
+                d.content,
+                d.oldLine,
+                d.newLine
+            )).ToList()
+        );
+
+        return Ok(dto);
+    }
 }
