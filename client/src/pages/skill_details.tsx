@@ -1,15 +1,12 @@
-import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import {
-  fetchSkillById,
-  fetchSkillVersions,
-  updateSkillVisibility,
-  deleteSkill,
-} from "../api/skills";
-import { addSkillTag, deleteSkillTag } from "../api/tag";
-import type { SkillDetailsT } from "../types/skill-details";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { fetchSkillById, deleteSkill } from "../api/skills";
+import type { SkillDetailsT } from "../types/skillDetailsT";
 import { fetchMe } from "../api/auth";
-import type { TagT } from "../types/tag";
+import type { TagT } from "../types/tagT";
+import SkillDetailsHeader from "../components/skill-details/SkillDetailsHeader";
+import MarkdownViewer from "../components/skill-details/MarkdownViewer";
+import SkillTags from "../components/skill-details/SkillTags";
 
 type SkillDetails = {
   id: number;
@@ -26,22 +23,16 @@ export default function SkillDetails() {
   const [skill, setSkill] = useState<SkillDetailsT | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [username, setUsername] = useState<{ username: string } | null>(null);
-  const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showVersions, setShowVersions] = useState(false);
-  const [versions, setVersions] = useState<
-    { versionNumber: number; createdAt: string }[]
-  >([]);
   const [tags, setTags] = useState<TagT[]>([]);
-  const [newTag, setNewTag] = useState("");
-
-  const versionsRef = useRef<HTMLDivElement | null>(null);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromDashboardState =
+    (location.state as { from?: string })?.from ?? "?view=private"; // go back to the dashboard it comes from, else fall back to private view
 
   const isOwner = username?.username === skill?.ownerUsername;
 
@@ -72,56 +63,7 @@ export default function SkillDetails() {
     load();
   }, [id]);
 
-  // fetch versions whenever versions is toggle
-  useEffect(() => {
-    if (!showVersions || !skill) return;
-
-    fetchSkillVersions(skill.id).then(setVersions).catch(console.error);
-  }, [showVersions, skill]);
-
-  // close versions modal when clicking outside
-  useEffect(() => {
-    function handleClickOutsideVersionsModal(event: MouseEvent) {
-      if (
-        versionsRef.current &&
-        !versionsRef.current.contains(event.target as Node)
-      ) {
-        setShowVersions(false);
-      }
-    }
-
-    if (showVersions) {
-      document.addEventListener("mousedown", handleClickOutsideVersionsModal);
-    }
-
-    return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutsideVersionsModal
-      );
-    };
-  }, [showVersions]);
-
-  // handle visibility toggle
-  async function handleToggleVisibility() {
-    if (!skill) return;
-
-    const next = !skill.isPublic;
-    setUpdatingVisibility(true);
-    try {
-      await updateSkillVisibility(skill.id, next);
-    } catch {
-      alert("Failed to update visibility");
-    } finally {
-      // refresh skill details (mainly for last updated time)
-      const fresh = await fetchSkillById(skill.id);
-      setSkill(fresh);
-      setUpdatingVisibility(false);
-    }
-  }
-
-  // handle skill deletion
-  async function handleDelete() {
+  async function handleDeleteSkill() {
     if (!skill) return;
 
     setDeleting(true);
@@ -135,45 +77,6 @@ export default function SkillDetails() {
     }
   }
 
-  // handle add tag to skill
-  async function handleAddTag() {
-    const raw = newTag.trim();
-    if (!raw || !skill) return;
-
-    if (!(raw.length <= 20 && /^[a-zA-Z0-9._-]+$/.test(raw))) {
-      alert(
-        "Tag must be 20 characters or fewer and only contain letters, numbers, '.', '-', or '_'"
-      );
-      return;
-    }
-
-    try {
-      const res = await addSkillTag(skill.id, raw);
-
-      if (res) {
-        setTags((prev) =>
-          prev.some((t) => t.id === res.id) ? prev : [...prev, res]
-        );
-      }
-
-      setNewTag("");
-    } catch (err) {
-      alert((err as Error).message);
-    }
-  }
-
-  async function handleDeleteTag(tagId: number) {
-    if (!skill) return;
-
-    try {
-      await deleteSkillTag(skill.id, tagId);
-
-      setTags((prev) => prev.filter((t) => t.id !== tagId));
-    } catch (err) {
-      alert((err as Error).message);
-    }
-  }
-
   // loading state
   if (loading) {
     return <div className="p-6 text-sm text-zinc-500">Loading skill…</div>;
@@ -184,7 +87,7 @@ export default function SkillDetails() {
     return (
       <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/dashboard${fromDashboardState}`)}
           className="text-sm text-orange-500 hover:underline hover:cursor-pointer"
         >
           ← Back to dashboard
@@ -200,245 +103,27 @@ export default function SkillDetails() {
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
       {/* Back */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(`/dashboard${fromDashboardState}`)}
         className="mb-4 text-sm text-orange-500 hover:underline hover:cursor-pointer"
       >
         ← Back to dashboard
       </button>
-
       <div className="mx-auto max-w-4xl rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-        {/* Header */}
-        <div className="mb-2">
-          <div className="flex justify-between">
-            <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 max-w-[60%] line-clamp-1">
-              {skill.name}
-            </h1>
-            {isOwner && (
-              <div className="flex items-center gap-4">
-                {/* Visibility toggle */}
-                <button
-                  onClick={handleToggleVisibility}
-                  disabled={updatingVisibility}
-                  className="text-xs rounded-md text-orange-500 hover:underline disabled:opacity-50 duration-300 hover:cursor-pointer"
-                >
-                  {skill.isPublic ? "Make Private" : "Make Public"}
-                </button>
+        <SkillDetailsHeader
+          skill={skill}
+          isOwner={isOwner}
+          setSkill={setSkill}
+          setShowDeleteConfirm={setShowDeleteConfirm}
+        />
 
-                {/* Edit */}
-                <button
-                  onClick={() => navigate(`/skills/${skill.id}/edit`)}
-                  className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
-                >
-                  Edit
-                </button>
+        <MarkdownViewer skill={skill} />
 
-                {/* Versions */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowVersions(!showVersions)}
-                    disabled={showVersions}
-                    className={`text-xs text-orange-500 ${
-                      showVersions ? "" : "hover:cursor-pointer hover:underline"
-                    }`}
-                  >
-                    Versions
-                  </button>
-
-                  {/* Versions modal */}
-                  {showVersions && (
-                    <div
-                      className="absolute right-1/2 translate-x-1/2 top-4 z-10 mt-2 w-40 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg"
-                      ref={versionsRef}
-                    >
-                      <div className="max-h-40 overflow-y-auto custom-scrollbar py-1 text-sm">
-                        {versions.length === 0 ? ( // just in case
-                          <div className="px-3 py-2 text-zinc-500 text-xs">
-                            No versions found
-                          </div>
-                        ) : (
-                          versions.map((v) => (
-                            <div
-                              key={v.versionNumber}
-                              className="flex items-center justify-between px-3 py-2 text-zinc-700 dark:text-zinc-300"
-                            >
-                              <span>
-                                v{v.versionNumber}
-                                {v.versionNumber === skill.latestVersion && (
-                                  <span className="ml-2 text-xs text-orange-500">
-                                    Latest
-                                  </span>
-                                )}
-                              </span>
-
-                              <span className="text-xs text-zinc-500">
-                                {new Date(v.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Delete */}
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-xs text-red-500 hover:underline hover:cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Skill Info */}
-          <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500">
-            <span>
-              Posted by{" "}
-              <span className="font-medium inline-block max-w-[15vw] truncate align-middle">
-                {skill.ownerUsername}
-              </span>
-            </span>
-            <span>•</span>
-            <span>v{skill.latestVersion}</span>
-            <span>•</span>
-            <span>{skill.isPublic ? "Public" : "Private"}</span>
-            <span>•</span>
-            <span>
-              Last updated{" "}
-              {new Date(skill.updatedAt).toLocaleString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}
-            </span>
-          </div>
-        </div>
-
-        {/* Description */}
-        {skill.description && (
-          <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400 max-h-[8vh] overflow-auto custom-scrollbar">
-            {skill.description}
-          </p>
-        )}
-
-        {/* Markdown viewer */}
-        <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 px-3 py-2">
-            <span className="text-xs font-mono opacity-80">markdown</span>
-
-            <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(skill.content);
-                  setCopied(true);
-
-                  setTimeout(() => {
-                    setCopied(false);
-                  }, 1500);
-                }}
-                className={`text-xs flex items-center gap-1 transition ${
-                  copied ? "" : "hover:cursor-pointer hover:underline"
-                }`}
-                disabled={copied}
-              >
-                {copied ? (
-                  <>
-                    Copied
-                    <span aria-hidden>✓</span>
-                  </>
-                ) : (
-                  "Copy"
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  const blob = new Blob([skill.content], {
-                    type: "text/markdown",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${skill.name}.md`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="text-xs hover:underline hover:cursor-pointer"
-              >
-                Download
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[46vh] overflow-auto custom-scrollbar">
-            <pre className="text-sm font-mono whitespace-pre-wrap">
-              {skill.content || "// No content in this version"}
-            </pre>
-          </div>
-        </div>
-
-        <div className="mt-3">
-          {/* Tags header */}
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-              Tags
-            </h2>
-
-            {isOwner && (
-              <div className="flex items-center gap-2">
-                <input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddTag();
-                  }}
-                  placeholder="Add tag"
-                  className="text-xs px-2 py-1 rounded border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none placeholder:text-zinc-500 caret-zinc-500 text-zinc-500"
-                />
-
-                <button
-                  onClick={handleAddTag}
-                  className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
-                >
-                  Add
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Tags container */}
-          <div className="flex gap-2 h-8 overflow-x-auto overflow-y-hidden pr-1 custom-scrollbar">
-            {tags.length === 0 && (
-              <span className="text-xs text-zinc-500">No tags</span>
-            )}
-
-            {tags.map((tag) => (
-              <span
-                key={tag.id}
-                className="flex h-6 items-center gap-1 px-2 py-0.5 rounded-sm text-xs bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 whitespace-nowrap"
-              >
-                {tag.name}
-
-                {isOwner && (
-                  <div
-                    onClick={() => handleDeleteTag(tag.id)}
-                    className="text-zinc-500 hover:text-red-500 hover:cursor-pointer transition"
-                    title="Remove tag"
-                  >
-                    ×
-                  </div>
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
+        <SkillTags
+          skill={skill}
+          isOwner={isOwner}
+          tags={tags}
+          setTags={setTags}
+        />
       </div>
 
       {/* Delete confirmation modal */}
@@ -470,7 +155,7 @@ export default function SkillDetails() {
               </button>
 
               <button
-                onClick={handleDelete}
+                onClick={handleDeleteSkill}
                 disabled={deleting}
                 className="text-sm text-red-500 font-medium hover:underline hover:cursor-pointer disabled:opacity-50"
               >

@@ -1,5 +1,5 @@
-import type { SkillCardT } from "../types/skill-card";
-import type { SkillDetailsT } from "../types/skill-details";
+import type { SkillCardT } from "../types/skillCardT";
+import type { SkillDetailsT } from "../types/skillDetailsT";
 import { apiFetch } from "./client";
 
 // get private skills
@@ -134,4 +134,16 @@ export async function fetchSkillVersions(id: number) {
   }
 
   return res.json() as Promise<{ versionNumber: number; createdAt: string }[]>;
+}
+
+// clone a public skill to private library
+export async function cloneSkill(id: number): Promise<void> {
+  const res = await apiFetch(`/skills/${id}/clone`, {
+    method: "POST",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to clone skill");
+  }
 }

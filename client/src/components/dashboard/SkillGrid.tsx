@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { SkillCardT } from "../../types/skill-card";
+import type { SkillCardT } from "../../types/skillCardT";
 import { fetchSkills } from "../../api/skills";
 import SkillCard from "../dashboard/SkillCard";
 
@@ -71,7 +71,7 @@ export default function SkillGrid({
               (skill) => skill.ownerUsername !== username || view === "private" // only show own skills in private view
             )
             .map((skill) => (
-              <SkillCard skill={skill} username={username} />
+              <SkillCard key={skill.id} skill={skill} username={username} />
             ))}
         </div>
       </div>

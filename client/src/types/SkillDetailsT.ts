@@ -1,4 +1,4 @@
-import type { TagT } from "./tag";
+import type { TagT } from "./tagT";
 
 // mirrors skillDetailsDto
 export type SkillDetailsT = {
@@ -11,4 +11,6 @@ export type SkillDetailsT = {
   updatedAt: string;
   isPublic: boolean;
   tags: TagT[];
+  isCloned: boolean;
+  clonedFromUsername: string | null;
 };

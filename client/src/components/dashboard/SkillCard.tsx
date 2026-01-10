@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import type { SkillCardT } from "../../types/skill-card";
+import { useNavigate, useLocation } from "react-router-dom";
+import type { SkillCardT } from "../../types/skillCardT";
 
 interface Props {
   skill: SkillCardT;
@@ -10,18 +10,24 @@ const TAGS_DISPLAYED = 3;
 
 export default function SkillCard({ skill, username }: Props) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div
-      key={skill.id}
-      onClick={() => navigate(`/skills/${skill.id}`)}
+      onClick={() =>
+        navigate(`/skills/${skill.id}`, {
+          state: { from: location.search },
+        })
+      }
       className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
     >
       {/* Skill Card */}
       <h2 className="mb-1 text-sm font-semibold line-clamp-1">{skill.name}</h2>
 
       <p className="mb-2 text-[11px] text-zinc-500 max-w-[60%] truncate">
-        {skill.ownerUsername === username
+        {skill.isCloned // cloned skill, own skill and public skill in order
+          ? `Cloned from ${skill.clonedFromUsername}`
+          : skill.ownerUsername === username
           ? "Posted by you"
           : `Posted by ${skill.ownerUsername}`}
       </p>

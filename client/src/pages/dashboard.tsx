@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { uploadSkill } from "../api/skills";
 import { fetchMe } from "../api/auth";
 import { fetchAllTags } from "../api/tag";
-import type { TagT } from "../types/tag";
+import type { TagT } from "../types/tagT";
 import { useSearchParams } from "react-router-dom";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SkillGrid from "../components/dashboard/SkillGrid";
