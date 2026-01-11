@@ -13,26 +13,86 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgb(255, 105, 0, 0.5);
+  background-color: rgb(74, 246, 38, 0.5);
   border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(255, 105, 0, 0.8);
+  background-color: rgb(74, 246, 38, 0.8);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255, 105, 0, 0.5) transparent;
+  scrollbar-color: rgb(74, 246, 38, 0.5) transparent;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* highlight color change */
 @layer base {
-  ::selection {
-    @apply bg-orange-200 text-orange-900;
+  :root {
+    --glitch-green: rgb(74, 246, 38);
+    --glitch-green-bg: rgb(74 246 38/ 0.2);
+    --glitch-green-component-bg: rgb(74 246 38/ 0.1);
+    --glitch-green-container-bg: rgb(74 246 38/ 0.03);
+    --glitch-green-highlight: rgba(74, 246, 38, 0.06);
   }
 
-  .dark ::selection {
-    @apply bg-orange-900 text-orange-200;
+  html {
+    @apply font-mono;
+  }
+
+  ::selection {
+    background-color: var(--glitch-green-bg);
+    color: var(--glitch-green);
+  }
+}
+
+@layer components {
+  .btn-glitch-green {
+    @apply border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 hover:border-(--glitch-green) hover:cursor-pointer disabled:opacity-50;
+  }
+
+  .btn-glitch-green-2 {
+    @apply text-xs border px-3 py-1 bg-(--glitch-green-container-bg) border-zinc-800 text-zinc-300 hover:border-(--glitch-green) hover:text-(--glitch-green) hover:cursor-pointer;
+  }
+
+  .btn-neutral {
+    @apply text-zinc-400 hover:text-zinc-200 hover:cursor-pointer;
+  }
+
+  .input-glitch-green {
+    @apply bg-(--glitch-green-container-bg) border border-zinc-800 px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-(--glitch-green) caret-(--glitch-green);
+  }
+}
+
+@layer utilities {
+  .terminal-lines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    animation: scanLines 1s linear infinite;
+    z-index: 50;
+  }
+
+  @keyframes scanLines {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 0 4px;
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { register } from "../api/auth";
 import { Link } from "react-router-dom";
+import HudCorners from "../components/ui/HudCorners";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -71,88 +72,86 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-        {/* Header */}
-        <h1 className="mb-1 text-xl font-semibold text-zinc-900  dark:text-zinc-100">
-          Create account
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
+      <div className="relative w-full max-w-lg p-8 bg-(--glitch-green-container-bg)">
+        <HudCorners
+          className="text-(--glitch-green) pointer-events-none"
+          offset={0.5}
+          length={16}
+          strokeWidth={3}
+        />
+        <h1 className="text-sm font-semibold text-zinc-200">
+          agent-skills-registry
         </h1>
-        <p className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">
-          Register a new account
-        </p>
+        <p className="mt-1 mb-6 text-xs text-zinc-500">create new account</p>
 
-        {/* Registration form */}
         {success ? (
-          <p className="text-xs text-orange-500">
-            Account created successfully. You can now{" "}
-            <Link to="/login" className="text-orange-500 underline">
+          <p className="text-xs text-zinc-400">
+            account created successfully. you can now{" "}
+            <Link to="/login" className="text-(--glitch-green) hover:underline">
               log in
             </Link>
             .
           </p>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
-                Username
+              <label className="block mb-1 text-xs text-zinc-500">
+                username
               </label>
               <input
                 type="text"
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
-                placeholder="e.g., johndoe"
+                className="w-full input-glitch-green"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                required
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
-                Password
+              <label className="block mb-1 text-xs text-zinc-500">
+                password
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
-                placeholder="At least 8 characters, incl. a number"
+                className="w-full input-glitch-green"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
-                Confirm password
+              <label className="block mb-1 text-xs text-zinc-500">
+                confirm password
               </label>
               <input
                 type="password"
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500 text-xs duration-200 caret-amber-500"
-                placeholder="Re-enter your password"
+                className="w-full input-glitch-green"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                required
               />
             </div>
 
-            {/* Error message */}
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && (
+              <p className="text-xs text-red-400">
+                error: {error.toLowerCase()}
+              </p>
+            )}
 
-            {/* Submit button */}
-            <div className="flex justify-center mt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-1/5 rounded-sm bg-orange-500 py-1 font-medium text-white hover:bg-orange-600 disabled:opacity-50 text-xs hover:cursor-pointer duration-300"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-glitch-green"
+            >
+              {loading ? "creating account…" : "register"}
+            </button>
+
+            <p className="pt-2 text-xs text-zinc-500">
+              already have an account?{" "}
+              <Link
+                to="/login"
+                className="text-(--glitch-green) hover:underline"
               >
-                {loading ? "Creating account…" : "Register"}
-              </button>
-            </div>
-
-            {/* Link to login */}
-            <p className="text-center text-xs text-zinc-400">
-              Already have an account?{" "}
-              <Link to="/login" className="text-orange-500 hover:underline">
-                Login
+                login
               </Link>
             </p>
           </form>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { login } from "../api/auth";
 import { Link, useNavigate } from "react-router-dom";
+import HudCorners from "../components/ui/HudCorners";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -26,63 +27,66 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
+      <div className="relative w-full max-w-lg p-8 bg-(--glitch-green-container-bg)">
+        <HudCorners
+          className="text-(--glitch-green) pointer-events-none"
+          offset={0.5}
+          length={16}
+          strokeWidth={3}
+        />
         {/* Header */}
-        <h1 className="mb-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          Sign in
+        <h1 className="text-sm font-semibold text-zinc-200">
+          agent-skills-registry
         </h1>
-        <p className="mb-4 text-xs text-zinc-600 dark:text-zinc-400">
-          Access your account
+        <p className="mt-1 mb-6 text-xs text-zinc-500">
+          authenticate to continue
         </p>
 
         {/* Login form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
-              Username
-            </label>
+            <label className="block mb-1 text-xs text-zinc-500">username</label>
             <input
               type="text"
-              className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 duration-200 caret-amber-500"
+              className="w-full input-glitch-green"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-zinc-700 dark:text-zinc-300">
-              Password
-            </label>
+            <label className="block mb-1 text-xs text-zinc-500">password</label>
             <input
               type="password"
-              className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 duration-200 caret-amber-500"
+              className="w-full input-glitch-green"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
 
           {/* Error message */}
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && (
+            <p className="text-xs text-red-400">error: {error.toLowerCase()}</p>
+          )}
 
-          {/* Submit button */}
-          <div className="flex justify-center mt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-1/5 rounded-sm bg-orange-500 py-1 font-medium text-white text-xs hover:bg-orange-600 hover:cursor-pointer disabled:opacity-50 duration-300"
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className=" w-full btn-glitch-green"
+          >
+            {loading ? "authenticating…" : "login"}
+          </button>
+
+          {/* Register link */}
+          <p className="pt-2 text-xs text-zinc-500">
+            no account?{" "}
+            <Link
+              to="/register"
+              className="text-(--glitch-green) hover:underline"
             >
-              {loading ? "Signing in…" : "Login"}
-            </button>
-          </div>
-
-          {/* Link to register */}
-          <p className="text-center text-xs text-zinc-600 dark:text-zinc-400">
-            Don’t have an account?{" "}
-            <Link to="/register" className="text-orange-500 hover:underline">
-              Register
+              register
             </Link>
           </p>
         </form>

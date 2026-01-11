@@ -8,35 +8,38 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
-    <Routes>
-      {/* add future routes here */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/skills/:id"
-        element={
-          <ProtectedRoute>
-            <SkillDetails />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/skills/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SkillEdit />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <>
+      <div className="terminal-lines" />
+      <Routes>
+        {/* add future routes here */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skills/:id"
+          element={
+            <ProtectedRoute>
+              <SkillDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/skills/:id/edit"
+          element={
+            <ProtectedRoute>
+              <SkillEdit />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }

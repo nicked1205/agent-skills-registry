@@ -92,7 +92,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 .ToList();
 
             const int MAX_TAG_FILTERS = 5;
-            if (tagList.Count > MAX_TAG_FILTERS) return BadRequest($"You can filter by at most {MAX_TAG_FILTERS} tags.");
+            if (tagList.Count > MAX_TAG_FILTERS) return BadRequest($"You can filter by at most {MAX_TAG_FILTERS} tags");
 
             foreach (var tag in tagList) {
                 query = query.Where(s =>
@@ -152,7 +152,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 .ToList();
 
             const int MAX_TAG_FILTERS = 5;
-            if (tagList.Count > MAX_TAG_FILTERS) return BadRequest($"You can filter by at most {MAX_TAG_FILTERS} tags.");
+            if (tagList.Count > MAX_TAG_FILTERS) return BadRequest($"You can filter by at most {MAX_TAG_FILTERS} tags");
 
             foreach (var tag in tagList) {
                 query = query.Where(s =>
@@ -201,9 +201,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .Include(s => s.SkillTags)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (skill.OwnerId != userId) return Forbid();
+        if (skill.OwnerId != userId) return Forbid("You do not have permission to delete this skill");
 
         _db.Skills.Remove(skill);
         await _db.SaveChangesAsync();
@@ -223,11 +223,11 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
         var skill = await _db.Skills.FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (skill.OwnerId != userId) return Forbid();
+        if (skill.OwnerId != userId) return Forbid("You do not have permission to update this skill's visibility");
         
-        if (skill.IsCloned && request.IsPublic) return BadRequest("Cloned skills cannot be made public.");
+        if (skill.IsCloned && request.IsPublic) return BadRequest("Cloned skills cannot be made public");
 
         skill.IsPublic = request.IsPublic;
         skill.UpdatedAt = DateTimeOffset.UtcNow;
@@ -251,9 +251,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid("You do not have permission to view this skill");
 
         var latestVersion = skill.Versions
             .OrderByDescending(v => v.VersionNumber)
@@ -268,6 +268,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             latestVersion?.VersionNumber ?? 1,
             latestVersion?.Content ?? string.Empty,
             skill.UpdatedAt,
+            skill.CreatedAt,
             skill.SkillTags
                 .OrderBy(st => st.Tag.Name)
                 .Select(st => new TagDto(st.TagId, st.Tag.Name))
@@ -290,15 +291,15 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
 
-        if (string.IsNullOrWhiteSpace(request.RawContent)) return BadRequest("Content cannot be empty.");
+        if (string.IsNullOrWhiteSpace(request.RawContent)) return BadRequest("Content cannot be empty");
 
         var skill = await _db.Skills
             .Include(s => s.Versions)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (skill.OwnerId != userId) return Forbid();
+        if (skill.OwnerId != userId) return Forbid("You do not have permission to create a version for this skill");
 
         SkillFrontmatter parsed;
         try {
@@ -342,9 +343,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .Include(s => s.Versions)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid("You do not have permission to view this skill");
 
         var versions = skill.Versions
             .OrderByDescending(v => v.VersionNumber)
@@ -365,12 +366,12 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
         if (!skill.IsPublic) {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             if (skill.OwnerId != userId)
-                return Forbid();
+                return Forbid( "You do not have permission to view tags for this skill");
         }
 
         var tags = skill.SkillTags
@@ -389,12 +390,12 @@ public class SkillsController(AppDbContext db) : ControllerBase {
     ) {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        if (string.IsNullOrWhiteSpace(dto.Tag)) return BadRequest("Tag cannot be empty.");
+        if (string.IsNullOrWhiteSpace(dto.Tag)) return BadRequest("Tag cannot be empty");
 
         // normalize tag name in BE in case haven''t done in frontend
         var normalized = dto.Tag.Trim().ToLowerInvariant();
 
-        if (normalized.Length > 20) return BadRequest("Tag must be 20 characters or fewer.");
+        if (normalized.Length > 20) return BadRequest("Tag must be 20 characters or fewer");
 
         if (!normalized.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '.' || c == '-')) return BadRequest("Tag may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
 
@@ -403,9 +404,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (skill.OwnerId != userId) return Forbid();
+        if (skill.OwnerId != userId) return Forbid("You do not have permission to add a tag to this skill");
 
         // check if tag already exists globally
         var tag = await _db.Tags.FirstOrDefaultAsync(t => t.Name == normalized);
@@ -437,9 +438,9 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .Include(s => s.SkillTags)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (skill.OwnerId != userId) return Forbid();
+        if (skill.OwnerId != userId) return Forbid("You do not have permission to remove a tag from this skill");
 
         var skillTag = skill.SkillTags
             .FirstOrDefault(st => st.TagId == tagId);
@@ -485,22 +486,22 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 .ThenInclude(st => st.Tag)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (sourceSkill == null) return NotFound();
+        if (sourceSkill == null) return NotFound("Cannot find skill");
 
         // must be public
-        if (!sourceSkill.IsPublic) return Forbid();
+        if (!sourceSkill.IsPublic) return Forbid("You do not have permission to clone this skill");
 
         // probably not gonna happen because cloned skills can be public but just in case
-        if (sourceSkill.IsCloned) return BadRequest("Cloned skills cannot be cloned again.");
+        if (sourceSkill.IsCloned) return BadRequest("Cloned skills cannot be cloned again");
 
         // prevent cloning your own skill
-        if (sourceSkill.OwnerId == userId) return BadRequest("You cannot clone your own skill.");
+        if (sourceSkill.OwnerId == userId) return BadRequest("You cannot clone your own skill");
 
         var latestVersion = sourceSkill.Versions
             .OrderByDescending(v => v.VersionNumber)
             .FirstOrDefault();
 
-        if (latestVersion == null) return BadRequest("Source skill has no versions.");
+        if (latestVersion == null) return BadRequest("Source skill has no versions");
 
         var clonedSkill = new Skill {
             OwnerId = userId,
@@ -552,17 +553,17 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .Include(s => s.Versions)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
         // public skills can be downloaded by anyone while only owner for privates
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid("You do not have permission to download this skill");
 
         var latestVersion = skill.Versions
             .OrderByDescending(v => v.VersionNumber)
             .FirstOrDefault();
 
-        if (latestVersion == null) return BadRequest("Skill has no content.");
+        if (latestVersion == null) return BadRequest("Skill has no content");
 
         // only increase download count when public skill is downloaded by someone else
         if (skill.IsPublic && skill.OwnerId != userId) {
@@ -591,14 +592,14 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             .Include(s => s.Versions)
             .FirstOrDefaultAsync(s => s.Id == id);
 
-        if (skill == null) return NotFound();
+        if (skill == null) return NotFound("Cannot find skill");
 
-        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid();
+        if (!skill.IsPublic && skill.OwnerId != userId) return Forbid("You do not have permission to view diffs of this skill");
 
         var fromVersion = skill.Versions.FirstOrDefault(v => v.VersionNumber == from);
         var toVersion = skill.Versions.FirstOrDefault(v => v.VersionNumber == to);
 
-        if (fromVersion == null || toVersion == null) return BadRequest("Invalid version numbers.");
+        if (fromVersion == null || toVersion == null) return BadRequest("Invalid version numbers");
 
         var diff = DiffCheckerService.DiffLines(
             fromVersion.Content,

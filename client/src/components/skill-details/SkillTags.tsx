@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addSkillTag, deleteSkillTag } from "../../api/tag";
-import type { SkillDetailsT } from "../../types";
+import type { ErrorT, SkillDetailsT } from "../../types";
 import type { TagT } from "../../types";
 
 export interface Props {
@@ -8,14 +8,34 @@ export interface Props {
   skill: SkillDetailsT;
   tags: TagT[];
   setTags: React.Dispatch<React.SetStateAction<TagT[]>>;
+  onError: (err: ErrorT) => void;
 }
 
-export default function SkillTags({ isOwner, skill, tags, setTags }: Props) {
+const MAX_TAGS = 10;
+
+export default function SkillTags({
+  isOwner,
+  skill,
+  tags,
+  setTags,
+  onError,
+}: Props) {
   const [newTag, setNewTag] = useState("");
+
+  const canAddMore = tags.length < MAX_TAGS;
 
   async function handleAddTag() {
     const raw = newTag.trim();
     if (!raw || !skill) return;
+
+    if (!canAddMore) {
+      onError({
+        title: "failed to add tag",
+        message: `Maximum of ${MAX_TAGS} tags reached`,
+        fatal: false,
+      });
+      return;
+    }
 
     if (!(raw.length <= 20 && /^[a-zA-Z0-9._-]+$/.test(raw))) {
       alert(
@@ -35,7 +55,11 @@ export default function SkillTags({ isOwner, skill, tags, setTags }: Props) {
 
       setNewTag("");
     } catch (err) {
-      alert((err as Error).message);
+      onError({
+        title: "failed to add tag",
+        message: (err as Error).message,
+        fatal: false,
+      });
     }
   }
 
@@ -47,64 +71,54 @@ export default function SkillTags({ isOwner, skill, tags, setTags }: Props) {
 
       setTags((prev) => prev.filter((t) => t.id !== tagId));
     } catch (err) {
-      alert((err as Error).message);
+      onError({
+        title: "failed to delete tag",
+        message: (err as Error).message,
+        fatal: false,
+      });
     }
   }
 
   return (
-    <div className="mt-3">
-      {/* Tags header */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-          Tags
-        </h2>
+    <div className="flex items-center gap-2 text-xs text-zinc-400 whitespace-nowrap">
+      <span className="text-zinc-500">tags:</span>
 
-        {isOwner && (
-          <div className="flex items-center gap-2">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 max-h-12 overflow-hidden">
+        {tags.length === 0 && <span className="text-zinc-600">none</span>}
+
+        {tags.map((tag) => (
+          <span key={tag.id} className="flex items-center gap-1">
+            <span>{tag.name}</span>
+            {isOwner && (
+              <button
+                onClick={() => handleDeleteTag(tag.id)}
+                className="text-zinc-600 hover:text-red-400 hover:cursor-pointer"
+                title="remove tag"
+              >
+                ×
+              </button>
+            )}
+          </span>
+        ))}
+
+        {isOwner && canAddMore && (
+          <>
+            <span className="text-zinc-600">add</span>
             <input
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAddTag();
               }}
-              placeholder="Add tag"
-              className="text-xs px-2 py-1 rounded border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none placeholder:text-zinc-500 caret-zinc-500 text-zinc-500"
+              className="w-24 bg-transparent border-b border-zinc-700 focus:border-(--glitch-green-bg) focus:outline-none text-zinc-200 placeholder:text-zinc-700 caret-(--glitch-green)"
             />
-
-            <button
-              onClick={handleAddTag}
-              className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
-            >
-              Add
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Tags container */}
-      <div className="flex gap-2 h-8 overflow-x-auto overflow-y-hidden pr-1 custom-scrollbar">
-        {tags.length === 0 && (
-          <span className="text-xs text-zinc-500">No tags</span>
+            <span className="text-zinc-600 select-none">enter↵</span>
+          </>
         )}
 
-        {tags.map((tag) => (
-          <span
-            key={tag.id}
-            className="flex h-6 items-center gap-1 px-2 py-0.5 rounded-sm text-xs bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 whitespace-nowrap"
-          >
-            {tag.name}
-
-            {isOwner && (
-              <div
-                onClick={() => handleDeleteTag(tag.id)}
-                className="text-zinc-500 hover:text-red-500 hover:cursor-pointer transition"
-                title="Remove tag"
-              >
-                ×
-              </div>
-            )}
-          </span>
-        ))}
+        {isOwner && !canAddMore && (
+          <span className="text-zinc-600 select-none">max {MAX_TAGS}</span>
+        )}
       </div>
     </div>
   );

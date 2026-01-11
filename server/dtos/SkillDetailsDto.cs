@@ -10,6 +10,7 @@ public record SkillDetailsDto(
     int LatestVersion,
     string Content,
     DateTimeOffset UpdatedAt,
+    DateTimeOffset CreatedAt,
     List<TagDto> Tags,
     bool IsCloned,
     string? ClonedFromUsername,

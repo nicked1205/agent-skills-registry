@@ -1,13 +1,22 @@
 import { useState } from "react";
-import type { SkillDetailsT } from "../../types";
+import type { ErrorT, SkillDetailsT } from "../../types";
 import { downloadSkill } from "../../api/skills";
-
 export interface Props {
   skill: SkillDetailsT;
+  onError: (err: ErrorT) => void;
 }
 
-export default function MarkdownViewer({ skill }: Props) {
+export default function MarkdownViewer({ skill, onError }: Props) {
   const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(skill.content);
+    setCopied(true);
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 1500);
+  };
 
   const handleDownload = async () => {
     try {
@@ -23,53 +32,45 @@ export default function MarkdownViewer({ skill }: Props) {
 
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert((err as Error).message);
+      onError({
+        title: "failed to download skill",
+        message: (err as Error).message,
+        fatal: false,
+      });
     }
   };
 
   return (
-    <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
+    <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 px-5 py-2">
-        <span className="text-xs font-mono opacity-80">markdown</span>
+      <div className="flex items-center justify-between gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500">
+        <span className="text-zinc-400">markdown</span>
 
-        <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">
+        <div className="flex gap-3">
           <button
-            onClick={() => {
-              navigator.clipboard.writeText(skill.content);
-              setCopied(true);
-
-              setTimeout(() => {
-                setCopied(false);
-              }, 1500);
-            }}
-            className={`text-xs flex items-center gap-1 transition ${
-              copied ? "" : "hover:cursor-pointer hover:underline"
+            onClick={handleCopy}
+            className={`${
+              copied
+                ? "cursor-default"
+                : "hover:cursor-pointer hover:text-(--glitch-green)"
             }`}
             disabled={copied}
           >
-            {copied ? (
-              <>
-                Copied
-                <span aria-hidden>✓</span>
-              </>
-            ) : (
-              "Copy"
-            )}
+            {copied ? "copied" : "copy"}
           </button>
 
           <button
             onClick={handleDownload}
-            className="text-xs hover:underline hover:cursor-pointer"
+            className="hover:text-(--glitch-green) hover:cursor-pointer"
           >
-            Download
+            download
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="bg-zinc-50 dark:bg-zinc-950 text-orange-500 p-4 max-h-[46vh] overflow-auto custom-scrollbar">
-        <pre className="text-sm font-mono whitespace-pre-wrap">
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
+        <pre className="text-sm whitespace-pre-wrap">
           {skill.content || "// No content in this version"}
         </pre>
       </div>

@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { fetchSkillById, deleteSkill } from "../api/skills";
-import type { SkillDetailsT, SkillVersionT } from "../types";
+import { fetchSkillById } from "../api/skills";
+import type { ErrorT, SkillDetailsT, SkillVersionT } from "../types";
 import { fetchMe } from "../api/auth";
 import type { TagT } from "../types";
 import SkillDetailsHeader from "../components/skill-details/SkillDetailsHeader";
 import MarkdownViewer from "../components/skill-details/MarkdownViewer";
 import SkillTags from "../components/skill-details/SkillTags";
 import SkillDiffViewer from "../components/skill-details/SkillDiffViewer";
+import SkillMetadata from "../components/skill-details/SkillMetadata";
+import DeleteConfirmationModal from "../components/skill-details/DeleteConfirmationModal";
+import LoadingOverlay from "../components/ui/LoadingOverlay";
+import ErrorModal from "../components/ui/ErrorModal";
 
 type SkillDetails = {
   id: number;
@@ -23,12 +27,12 @@ type SkillDetails = {
 export default function SkillDetails() {
   const [skill, setSkill] = useState<SkillDetailsT | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [username, setUsername] = useState<{ username: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tags, setTags] = useState<TagT[]>([]);
   const [versions, setVersions] = useState<SkillVersionT[]>([]);
+  const [systemError, setSystemError] = useState<ErrorT | null>(null);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,154 +53,146 @@ export default function SkillDetails() {
 
   // fetch user info on mount
   useEffect(() => {
-    fetchMe().then((data) => setUsername(data));
+    let cancelled = false;
+
+    async function loadUser() {
+      try {
+        const data = await fetchMe();
+        if (!cancelled) {
+          setUsername(data.username);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSystemError({
+            title: "failed to load user",
+            message: (err as Error).message,
+            fatal: true,
+          });
+        }
+      }
+    }
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // fetch skill details
   useEffect(() => {
     if (!id) return;
 
-    async function load() {
+    async function loadSkillDetails() {
       setLoading(true);
-      setError(null);
 
       try {
         const data = await fetchSkillById(Number(id));
         setSkill(data);
         setTags(data.tags);
       } catch (err) {
-        setError((err as Error).message);
+        setSystemError({
+          title: "failed to load skill details",
+          message: (err as Error).message,
+          fatal: true,
+        });
       } finally {
         setLoading(false);
       }
     }
 
-    load();
+    loadSkillDetails();
   }, [id]);
 
-  async function handleDeleteSkill() {
-    if (!skill) return;
-
-    setDeleting(true);
-
-    try {
-      await deleteSkill(skill.id);
-      navigate("/dashboard");
-    } catch (err) {
-      alert((err as Error).message);
-      setDeleting(false);
-    }
-  }
-
-  function updateDiffParams(next: { from?: number; to?: number }) {
-    const p = new URLSearchParams(location.search);
-
-    if (next.from !== undefined) p.set("from", String(next.from));
-    if (next.to !== undefined) p.set("to", String(next.to));
-
-    navigate({ search: p.toString() }, { replace: true });
-  }
-
-  // loading state
   if (loading) {
-    return <div className="p-6 text-sm text-zinc-500">Loading skill…</div>;
+    return <LoadingOverlay />;
   }
 
-  // error state
-  if (error || !skill) {
+  if (systemError?.fatal) {
     return (
-      <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
-        <button
-          onClick={() => navigate(`/dashboard${fromDashboardState}`)}
-          className="text-sm text-orange-500 hover:underline hover:cursor-pointer"
-        >
-          ← Back to dashboard
-        </button>
-        <p className="mb-4 text-sm text-red-500">
-          {error ?? "Skill not found"}
-        </p>
-      </div>
+      <ErrorModal
+        error={systemError}
+        onExit={() => navigate(`/dashboard${fromDashboardState}`)}
+        onClose={() => setSystemError(null)}
+      />
     );
   }
 
+  // at this point, skill must exist because fatal errors are handled above
+  if (!skill) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-6">
-      {/* Back */}
-      <button
-        onClick={() => navigate(`/dashboard${fromDashboardState}`)}
-        className="mb-4 text-sm text-orange-500 hover:underline hover:cursor-pointer"
-      >
-        ← Back to dashboard
-      </button>
-      <div className="mx-auto max-w-4xl rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-        <SkillDetailsHeader
-          skill={skill}
-          isOwner={isOwner}
-          setSkill={setSkill}
-          setShowDeleteConfirm={setShowDeleteConfirm}
-          versions={versions}
-          setVersions={setVersions}
-        />
+    <div className="h-screen overflow-hidden bg-zinc-950">
+      {/* Topbar */}
+      <SkillDetailsHeader
+        skill={skill}
+        versions={versions}
+        isOwner={isOwner}
+        setSkill={setSkill}
+        setShowDeleteConfirm={setShowDeleteConfirm}
+        setVersions={setVersions}
+        fromDashboardState={fromDashboardState}
+        onError={(err) => setSystemError(err)}
+      />
 
-        {isDiffMode ? (
-          <SkillDiffViewer
-            skillId={skill.id}
-            versions={versions}
-            from={from}
-            to={to}
-            onChangeFrom={(v) => updateDiffParams({ from: v })}
-            onChangeTo={(v) => updateDiffParams({ to: v })}
-          />
-        ) : (
-          <MarkdownViewer skill={skill} />
-        )}
+      <div className="h-[calc(100vh-48px)] grid grid-cols-[3fr_7fr] gap-4 px-4 pb-4">
+        {/* Metadata */}
+        <div className="h-full border border-zinc-800 bg-zinc-950 p-3">
+          <SkillMetadata skill={skill} />
+        </div>
 
-        <SkillTags
-          skill={skill}
-          isOwner={isOwner}
-          tags={tags}
-          setTags={setTags}
-        />
-      </div>
+        <div className="h-full flex flex-col min-h-0 border border-zinc-800 bg-zinc-950">
+          {/* Viewers */}
+          <div className="flex-1 min-h-0">
+            {isDiffMode ? (
+              <SkillDiffViewer
+                skillId={skill.id}
+                from={from}
+                to={to}
+                onError={(err) => setSystemError(err)}
+                versions={versions}
+              />
+            ) : (
+              <MarkdownViewer
+                skill={skill}
+                onError={(err) => setSystemError(err)}
+              />
+            )}
+          </div>
 
-      {/* Delete confirmation modal */}
-      {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-10"
-          onClick={() => setShowDeleteConfirm(false)}
-        >
-          <div
-            className="bg-white dark:bg-zinc-900 rounded-lg p-6 w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()} // helps with close when click outside modal (doesnt close when clicking inside)
-          >
-            <h2 className="text-sm font-semibold mb-2 dark:text-zinc-200 text-zinc-800">
-              Delete skill?
-            </h2>
-
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-              This will permanently delete <strong>{skill.name}</strong> and all
-              its versions. This action cannot be undone.
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="text-sm dark:text-zinc-400 text-zinc-600 hover:underline hover:cursor-pointer"
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleDeleteSkill}
-                disabled={deleting}
-                className="text-sm text-red-500 font-medium hover:underline hover:cursor-pointer disabled:opacity-50"
-              >
-                {deleting ? "Deleting…" : "Delete"}
-              </button>
-            </div>
+          {/* Tags */}
+          <div className="relative px-3 py-2 overflow-x-auto">
+            <SkillTags
+              tags={tags}
+              setTags={setTags}
+              isOwner={isOwner}
+              skill={skill}
+              onError={(err) => setSystemError(err)}
+            />
           </div>
         </div>
+      </div>
+
+      {/* Delete modal */}
+      {showDeleteConfirm && (
+        <DeleteConfirmationModal
+          skill={skill}
+          deleting={deleting}
+          setDeleting={setDeleting}
+          setShowDeleteConfirm={setShowDeleteConfirm}
+          fromDashboardState={fromDashboardState}
+          onError={(err) => setSystemError(err)}
+        />
+      )}
+
+      {systemError && !systemError.fatal && (
+        <ErrorModal
+          error={systemError}
+          onClose={() => setSystemError(null)}
+          onExit={() => navigate(`/dashboard${fromDashboardState}`)}
+        />
       )}
     </div>
   );

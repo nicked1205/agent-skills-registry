@@ -1,77 +1,132 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchSkillById, createSkillVersion } from "../api/skills";
+import LoadingOverlay from "../components/ui/LoadingOverlay";
+import ErrorModal from "../components/ui/ErrorModal";
+import type { ErrorT } from "../types";
 
 export default function SkillEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [content, setContent] = useState("");
+  const [original, setOriginal] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [original, setOriginal] = useState("");
+  const [systemError, setSystemError] = useState<ErrorT | null>(null);
+
   const hasChanges = content !== original;
 
+  // fetch skill content on mount
   useEffect(() => {
-    async function load() {
+    if (!id) return;
+
+    async function loadSkill() {
+      setLoading(true);
       try {
         const skill = await fetchSkillById(Number(id));
         setContent(skill.content);
         setOriginal(skill.content);
       } catch (err) {
-        alert((err as Error).message);
+        setSystemError({
+          title: "failed to load skill",
+          message: (err as Error).message,
+          fatal: true,
+        });
       } finally {
         setLoading(false);
       }
     }
 
-    load();
+    loadSkill();
   }, [id]);
 
   async function handleSave() {
+    if (!hasChanges || saving) return;
+
     setSaving(true);
     try {
       await createSkillVersion(Number(id), content);
       navigate(`/skills/${id}`);
     } catch (err) {
-      alert((err as Error).message);
-    } finally {
+      setSystemError({
+        title: "failed to save new version",
+        message: (err as Error).message,
+        fatal: false,
+      });
       setSaving(false);
     }
   }
 
   if (loading) {
-    return <div className="p-6 text-sm text-zinc-500">Loading…</div>;
+    return <LoadingOverlay />;
+  }
+
+  if (systemError?.fatal) {
+    return (
+      <ErrorModal
+        error={systemError}
+        onExit={() => navigate(`/skills/${id}`)}
+        onClose={() => setSystemError(null)}
+      />
+    );
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <div className="flex items-center justify-between border-b border-zinc-300 dark:border-zinc-700 px-6 py-3 bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
-        <h1 className="text-sm font-semibold">Edit Skill</h1>
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 font-mono text-xs text-zinc-300">
+      {/* Header */}
+      <div className="h-12 flex items-center justify-between px-4 border-b border-zinc-800">
+        <div className="flex items-center gap-3 text-zinc-400">
+          <span>editing skill</span>
+        </div>
+
+        <div className="text-zinc-500">
+          {hasChanges ? (
+            <span className="text-yellow-400">modified</span>
+          ) : (
+            <span>no changes</span>
+          )}
+        </div>
       </div>
 
+      {/* Editor */}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="flex-1 resize-none p-6 font-mono text-sm outline-none dark:bg-zinc-950 bg-zinc-50 text-orange-500 custom-scrollbar"
+        spellCheck={false}
+        className="flex-1 resize-none p-4 bg-zinc-950 text-zinc-200 outline-none caret-(--glitch-green) custom-scrollbar"
       />
 
-      <div className="flex justify-end gap-2 border-t border-zinc-300 dark:border-zinc-700 px-6 py-3 bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
-        <button
-          onClick={() => navigate(-1)}
-          className="rounded px-3 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:cursor-pointer duration-300"
-        >
-          Cancel
+      {/* Footer */}
+      <div className="h-12 flex items-center justify-end gap-4 px-4 border-t border-zinc-800">
+        <button onClick={() => navigate(-1)} className="btn-neutral">
+          exit
         </button>
 
         <button
           onClick={handleSave}
           disabled={!hasChanges || saving}
-          className="rounded bg-orange-500 px-4 py-1.5 text-sm text-white disabled:opacity-50 hover:bg-orange-600 hover:cursor-pointer duration-300"
+          className={`
+            ${
+              hasChanges
+                ? "text-(--glitch-green) hover:text-(--glitch-green) hover:cursor-pointer"
+                : "text-zinc-600 hover:cursor-default"
+            }
+            disabled:opacity-50
+          `}
         >
-          {saving ? "Saving…" : "Save new version"}
+          {saving ? "committing…" : "commit new version"}
         </button>
       </div>
+
+      {/* Error modal */}
+      {systemError && !systemError.fatal && (
+        <ErrorModal
+          error={systemError}
+          onClose={() => setSystemError(null)}
+          onExit={() => navigate(`/skills/${id}`)}
+        />
+      )}
     </div>
   );
 }

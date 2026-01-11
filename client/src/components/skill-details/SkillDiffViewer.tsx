@@ -1,48 +1,49 @@
 import { useEffect, useState } from "react";
-import type { SkillVersionT, VersionsDiffT } from "../../types";
+import type { ErrorT, SkillVersionT, VersionsDiffT } from "../../types";
 import { fetchSkillDiff } from "../../api/skills";
 import { useNavigate } from "react-router-dom";
 import VersionsCustomSelect from "./VersionsCustomSelect";
 
 interface Props {
   skillId: number;
-  versions: SkillVersionT[];
   from: number;
   to: number;
-  onChangeFrom: (v: number) => void;
-  onChangeTo: (v: number) => void;
+  onError: (err: ErrorT) => void;
+  versions: SkillVersionT[];
 }
 
 export default function SkillDiffViewer({
   skillId,
-  versions,
   from,
   to,
-  onChangeFrom,
-  onChangeTo,
+  onError,
+  versions,
 }: Props) {
   const [diff, setDiff] = useState<VersionsDiffT | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const loading = !diff && !error;
 
   const navigate = useNavigate();
 
+  // fetch diff when from/to changes
   useEffect(() => {
     let cancelled = false;
 
     async function loadDiff() {
-      if (!from || !to) return;
+      if (!from || !to || from === to) return;
+
+      setDiff(null);
 
       try {
-        setError(null);
         const result = await fetchSkillDiff(skillId, from, to);
-
         if (!cancelled) {
           setDiff(result);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load diff");
+          onError({
+            title: "failed to load version diff",
+            message: (err as Error).message,
+            fatal: false,
+          });
         }
       }
     }
@@ -52,102 +53,76 @@ export default function SkillDiffViewer({
     return () => {
       cancelled = true;
     };
-  }, [skillId, from, to]);
+  }, [skillId, from, to, onError]);
 
   return (
-    <div className="rounded-lg border border-zinc-300 dark:border-zinc-700 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-zinc-200 dark:bg-zinc-900 px-5 py-2">
-        <div className="flex items-center gap-5 text-xs">
+    <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
+      {/* Toolbar */}
+      <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500">
+        <div className="flex items-center gap-2">
           <VersionsCustomSelect
-            label="From"
             value={from}
             versions={versions}
-            onChange={onChangeFrom}
+            onChange={(v) => navigate(`/skills/${skillId}?from=${v}&to=${to}`)}
           />
 
+          <span className="text-zinc-600">→</span>
+
           <VersionsCustomSelect
-            label="To"
             value={to}
             versions={versions}
-            onChange={onChangeTo}
+            onChange={(v) =>
+              navigate(`/skills/${skillId}?from=${from}&to=${v}`)
+            }
           />
         </div>
 
         <button
-          onClick={() => {
-            navigate(`/skills/${skillId}`);
-          }}
-          className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
+          onClick={() => navigate(`/skills/${skillId}`)}
+          className="hover:text-(--glitch-green) hover:cursor-pointer"
         >
-          Exit diff
+          exit diff
         </button>
       </div>
 
       {/* Content */}
-      <div className="bg-zinc-50 dark:bg-zinc-950 p-4 min-h-[30vh] max-h-[46vh] overflow-auto custom-scrollbar">
-        {loading && <div className="text-xs text-zinc-500">Loading diff…</div>}
-
-        {error && <div className="text-xs text-red-500">{error}</div>}
-
-        {!loading && diff && diff.lines.length === 0 && (
-          <div className="text-xs text-zinc-500">
-            No differences between these versions.
+      <div className="flex-1 min-h-0 overflow-y-auto text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
+        {from == to ? (
+          <div className="h-full flex items-center justify-center text-xs text-zinc-500">
+            select two different versions to compare
           </div>
+        ) : (
+          diff?.lines.map((line, i) => (
+            <div
+              key={i}
+              className={`flex px-3 py-0.5 ${
+                line.type === "add"
+                  ? "bg-[rgba(74,246,38,0.06)] text-zinc-200"
+                  : line.type === "remove"
+                  ? "bg-[rgba(239,68,68,0.08)] text-zinc-200"
+                  : "text-zinc-400"
+              }`}
+            >
+              {/* Line numbers */}
+              <span className="w-12 shrink-0 text-right pr-2 text-zinc-600">
+                {line.oldLineNumber ?? ""}
+              </span>
+              <span className="w-12 shrink-0 text-right pr-2 text-zinc-600">
+                {line.newLineNumber ?? ""}
+              </span>
+
+              {/* Texts */}
+              <span className="whitespace-pre-wrap wrap-break-word">
+                {line.type === "add"
+                  ? "+ "
+                  : line.type === "remove"
+                  ? "- "
+                  : "  "}
+                {line.content}
+              </span>
+            </div>
+          ))
         )}
-
-        {!loading &&
-          diff &&
-          diff.lines.map((line, idx) => {
-            const base =
-              "whitespace-pre-wrap px-2 py-0.5 rounded-sm flex gap-3";
-
-            if (line.type === "add") {
-              return (
-                <div
-                  key={idx}
-                  className={`${base} bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300`}
-                >
-                  <div className="grid grid-cols-[3rem_1fr] items-start gap-3 px-2 py-0.5 whitespace-pre-wrap">
-                    <span className="text-right text-xs opacity-50 leading-5 select-none">
-                      {line.oldLineNumber ?? ""}
-                    </span>
-                    <span className="leading-5">+ {line.content}</span>
-                  </div>
-                </div>
-              );
-            }
-
-            if (line.type === "remove") {
-              return (
-                <div
-                  key={idx}
-                  className={`${base} bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300`}
-                >
-                  <div className="grid grid-cols-[3rem_1fr] items-start gap-3 px-2 py-0.5 whitespace-pre-wrap">
-                    <span className="text-right text-xs opacity-50 leading-5 select-none">
-                      {line.oldLineNumber ?? ""}
-                    </span>
-                    <span className="leading-5">- {line.content}</span>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                key={idx}
-                className={`${base} text-zinc-700 dark:text-zinc-300`}
-              >
-                <div className="grid grid-cols-[3rem_1fr] items-start gap-3 px-2 py-0.5 whitespace-pre-wrap">
-                  <span className="text-right text-xs opacity-50 leading-5 select-none">
-                    {line.oldLineNumber ?? ""}
-                  </span>
-                  <span className="leading-5">{line.content}</span>
-                </div>
-              </div>
-            );
-          })}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { SkillCardT } from "../../types";
+import type { ErrorT, SkillCardT } from "../../types";
 import { fetchSkills } from "../../api/skills";
 import SkillCard from "../dashboard/SkillCard";
 
@@ -9,6 +9,7 @@ interface Props {
   reloadKey: number;
   appliedSearch: string;
   appliedTags: string[];
+  onError: (err: ErrorT) => void;
 }
 
 export default function SkillGrid({
@@ -17,50 +18,48 @@ export default function SkillGrid({
   reloadKey,
   appliedSearch,
   appliedTags,
+  onError,
 }: Props) {
   const [skills, setSkills] = useState<SkillCardT[]>([]); // skills list
   const [loading, setLoading] = useState(false); // loading state
-  const [error, setError] = useState<string | null>(null); // error message
 
   useEffect(() => {
     let active = true;
 
-    async function load() {
+    async function loadSkills() {
       setLoading(true);
-      setError(null);
 
       try {
         const data = await fetchSkills(view, appliedSearch, appliedTags);
 
         if (active) setSkills(data);
       } catch (err) {
-        if (active) setError((err as Error).message);
+        if (active) {
+          onError({
+            title: "failed to load skills",
+            message: (err as Error).message,
+            fatal: false,
+          });
+        }
       } finally {
         if (active) setLoading(false);
       }
     }
 
-    load();
+    loadSkills();
     return () => {
       active = false;
     };
-  }, [view, reloadKey, appliedSearch, appliedTags]);
+  }, [view, reloadKey, appliedSearch, appliedTags, onError]);
 
   return (
     <>
       {loading && (
-        <p className="text-xs text-zinc-600 dark:text-zinc-400 duration-300 ml-2 mt-4">
-          Loading skills…
-        </p>
+        <p className="text-xs text-zinc-500 ml-2 mt-4">loading skills…</p>
       )}
-
-      {error && <p className="text-xs text-red-500">{error}</p>}
-
-      {!loading && !error && skills.length === 0 && (
+      {!loading && skills.length === 0 && (
         <p className="text-xs text-zinc-500 ml-2 mt-4">
-          {view === "private"
-            ? "You haven’t uploaded any skills yet."
-            : "No public skills available."}
+          {view === "private" ? "no local entries" : "no public entries"}
         </p>
       )}
 

@@ -1,13 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import type { SkillCardT } from "../../types";
 import { CloneIcon, DownloadIcon } from "../../icons";
+import HudCorners from "../ui/HudCorners";
 
 interface Props {
   skill: SkillCardT;
   username: string | null;
 }
-
-const TAGS_DISPLAYED = 3;
 
 export default function SkillCard({ skill, username }: Props) {
   const navigate = useNavigate();
@@ -16,78 +15,71 @@ export default function SkillCard({ skill, username }: Props) {
   return (
     <div
       onClick={() =>
-        navigate(`/skills/${skill.id}`, {
-          state: { from: location.search },
-        })
+        navigate(`/skills/${skill.id}`, { state: { from: location.search } })
       }
-      className="flex h-full flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 duration-300 hover:cursor-pointer hover:shadow-md hover:scale-105 hover:dark:brightness-125"
+      className="relative group border border-zinc-900 bg-zinc-950 rounded-sm p-3 hover:cursor-pointer flex flex-col h-full"
     >
-      {/* Skill Card */}
-      <h2 className="mb-1 text-sm font-semibold line-clamp-1">{skill.name}</h2>
+      <HudCorners
+        className="text-(--glitch-green) opacity-0 group-hover:opacity-60 pointer-events-none"
+        offset={0.5}
+        length={12}
+        strokeWidth={3}
+      />
 
-      <p className="mb-2 text-[11px] text-zinc-500 max-w-[60%] truncate">
-        {skill.isCloned // cloned skill, own skill and public skill in order
-          ? `Cloned from ${skill.clonedFromUsername}`
-          : skill.ownerUsername === username
-          ? "Posted by you"
-          : `Posted by ${skill.ownerUsername}`}
-      </p>
+      {/* Name */}
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <span className="text-sm text-zinc-100 font-medium truncate">
+          {skill.name}
+        </span>
+        <span className="text-[11px] text-zinc-500 truncate">
+          {skill.isCloned
+            ? `cloned from ${skill.clonedFromUsername}`
+            : skill.ownerUsername === username
+            ? "posted by you"
+            : `posted by ${skill.ownerUsername}`}
+        </span>
+      </div>
 
-      <p className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 duration-300">
-        {skill.description}
-      </p>
+      {/* Description and Tags */}
+      <div className="flex flex-col gap-2 mt-2 flex-1">
+        {skill.description && (
+          <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
+            {skill.description}
+          </p>
+        )}
 
-      <div className="mt-auto flex items-center justify-between text-xs text-zinc-500">
-        {/* Metadata */}
-        <div className="flex items-center gap-2">
-          <span>v{skill.latestVersion}</span>
-          <span>•</span>
-          <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
-        </div>
-
-        {/* Stats */}
-        {!skill.isCloned && (
-          <div className="flex items-center gap-3 text-zinc-500">
-            <div className="flex items-center gap-1">
-              <DownloadIcon className="h-3.5 w-3.5" />
-              <span>{skill.downloadCount}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <CloneIcon className="h-3.5 w-3.5" />
-              <span>{skill.cloneCount}</span>
-            </div>
+        {skill.tags && skill.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {skill.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500"
+              >
+                {tag.name}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Tags row */}
-      {skill.tags.length > 0 && (
-        <div className="mt-2 flex items-center text-[11px] text-zinc-500">
-          <span className="shrink-0 mr-3">Tags:</span>
+      {/* Metadata */}
+      <div className="flex items-center justify-between text-[11px] text-zinc-500 mt-auto pt-2">
+        <span>v{skill.latestVersion}</span>
+        <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
 
-          {/* Tags*/}
-          <div className="flex-1 flex justify-start">
-            <div className="flex items-center gap-2 overflow-hidden">
-              {skill.tags.slice(0, TAGS_DISPLAYED).map((tag) => (
-                <span
-                  key={tag.id}
-                  className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 truncate max-w-20 duration-300"
-                >
-                  {tag.name}
-                </span>
-              ))}
-
-              {/* Remaining tags */}
-              {skill.tags.length > TAGS_DISPLAYED && (
-                <span className="text-zinc-400 shrink-0">
-                  +{skill.tags.length - TAGS_DISPLAYED}
-                </span>
-              )}
-            </div>
+        {!skill.isCloned && (
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <DownloadIcon className="h-3.5 w-3.5" />
+              {skill.downloadCount}
+            </span>
+            <span className="flex items-center gap-1">
+              <CloneIcon className="h-3.5 w-3.5" />
+              {skill.cloneCount}
+            </span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

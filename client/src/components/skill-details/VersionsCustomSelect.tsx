@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import type { SkillVersionT } from "../../types";
-import { ArrowUpIcon } from "../../icons";
 
 interface Props {
   label?: string;
@@ -33,25 +32,39 @@ export default function VersionsCustomSelect({
   const selected = versions.find((v) => v.versionNumber === value);
 
   return (
-    <div ref={ref} className="relative inline-flex items-center gap-2">
-      {label && (
-        <span className="text-xs text-zinc-500 select-none">{label}</span>
-      )}
+    <div
+      ref={ref}
+      className="relative inline-flex items-center gap-2 text-xs font-mono"
+    >
+      {label && <span className="text-zinc-600 select-none">{label}</span>}
 
-      {/* Trigger */}
+      {/* Button */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center justify-between gap-2 rounded-md border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 min-w-18 text-xs text-zinc-800 dark:text-zinc-200 duration-200 "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:cursor-pointer`}
+        className={`
+          flex items-center gap-2 px-2 py-1
+          border border-zinc-800 bg-zinc-950
+          text-zinc-300 hover:text-(--glitch-green)
+          hover:border-(--glitch-green-bg)
+          transition-colors cursor-pointer
+        `}
       >
         <span>{selected ? `v${selected.versionNumber}` : "—"}</span>
-        <span className={`p-0.75 ${open ? "rotate-180" : ""}`}>
-          <ArrowUpIcon className="h-3 w-3 fill-zinc-600 dark:fill-zinc-400" />
-        </span>
+        <span className="text-zinc-600 select-none">▾</span>
       </button>
+
       {/* Dropdown */}
       {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 z-20 mt-1 w-full min-w-24 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg max-h-40 overflow-y-auto custom-scrollbar">
+        <div
+          className="
+            absolute top-full right-0 z-20 mt-1
+            w-44 max-h-48 overflow-y-auto
+            border border-zinc-800 bg-zinc-950
+            shadow-[0_0_0_1px_rgba(0,0,0,0.6)]
+            custom-scrollbar
+          "
+        >
           {versions.map((v) => {
             const active = v.versionNumber === value;
 
@@ -62,16 +75,21 @@ export default function VersionsCustomSelect({
                   onChange(v.versionNumber);
                   setOpen(false);
                 }}
+                disabled={active}
                 className={`
-                  w-full text-left px-2 py-1.5 text-xs
+                  w-full flex justify-between px-3 py-1.5
+                  text-left font-mono text-xs
                   ${
                     active
-                      ? "bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-500"
-                      : "select-option"
+                      ? "text-(--glitch-green) bg-(--glitch-green-highlight) cursor-default"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 hover:cursor-pointer"
                   }
                 `}
               >
-                v{v.versionNumber} {new Date(v.createdAt).toLocaleDateString()}
+                <span>v{v.versionNumber}</span>
+                <span className="text-zinc-600">
+                  {new Date(v.createdAt).toLocaleDateString()}
+                </span>
               </button>
             );
           })}

@@ -49,9 +49,9 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] AuthRequest request) {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-        if (user == null) return Unauthorized();
+        if (user == null) return Unauthorized("Invalid username or password");
 
-        if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash)) return Unauthorized();
+        if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash)) return Unauthorized("Invalid username or password");
 
         var token = GenerateJwt(user);
         return Ok(new { token });
@@ -62,7 +62,7 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
     public IActionResult Me() {
         var username = User.Identity?.Name;
 
-        if (username == null) return Unauthorized();
+        if (username == null) return Unauthorized("Invalid token");
 
         return Ok(new { username });
     }

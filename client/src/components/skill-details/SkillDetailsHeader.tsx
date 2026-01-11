@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import type { SkillDetailsT, SkillVersionT } from "../../types";
+import type { ErrorT, SkillDetailsT, SkillVersionT } from "../../types";
 import {
   cloneSkill,
   fetchSkillById,
   fetchSkillVersions,
   updateSkillVisibility,
 } from "../../api/skills";
-import { useEffect, useRef, useState } from "react";
-import { CloneIcon, DownloadIcon } from "../../icons";
+import { useEffect } from "react";
+import VersionsCustomSelect from "./VersionsCustomSelect";
 
 export interface Props {
   skill: SkillDetailsT;
@@ -16,6 +16,8 @@ export interface Props {
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   versions: SkillVersionT[];
   setVersions: React.Dispatch<React.SetStateAction<SkillVersionT[]>>;
+  fromDashboardState: string;
+  onError: (err: ErrorT) => void;
 }
 
 export default function SkillDetailsHeader({
@@ -25,12 +27,9 @@ export default function SkillDetailsHeader({
   setShowDeleteConfirm,
   versions,
   setVersions,
+  fromDashboardState,
+  onError,
 }: Props) {
-  const [updatingVisibility, setUpdatingVisibility] = useState(false);
-  const [showVersions, setShowVersions] = useState(false);
-
-  const versionsRef = useRef<HTMLDivElement | null>(null);
-
   const isPublicView = !isOwner && skill?.isPublic;
   const isCloned = skill?.isCloned;
 
@@ -40,47 +39,50 @@ export default function SkillDetailsHeader({
   useEffect(() => {
     if (!skill) return;
 
-    fetchSkillVersions(skill.id).then(setVersions).catch(console.error);
-  }, [skill, setVersions]);
+    let cancelled = false;
 
-  // close versions modal when clicking outside
-  useEffect(() => {
-    function handleClickOutsideVersionsModal(event: MouseEvent) {
-      if (
-        versionsRef.current &&
-        !versionsRef.current.contains(event.target as Node)
-      ) {
-        setShowVersions(false);
+    async function loadVersions() {
+      try {
+        const versions = await fetchSkillVersions(skill.id);
+        if (!cancelled) {
+          setVersions(versions);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          onError({
+            title: "failed to load skill versions",
+            message: (err as Error).message,
+            fatal: false,
+          });
+        }
       }
     }
 
-    if (showVersions) {
-      document.addEventListener("mousedown", handleClickOutsideVersionsModal);
-    }
+    loadVersions();
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutsideVersionsModal
-      );
+      cancelled = true;
     };
-  }, [showVersions]);
+  }, [skill, onError, setVersions]);
 
   // handle visibility toggle
   async function handleToggleVisibility() {
     if (!skill) return;
 
     const next = !skill.isPublic;
-    setUpdatingVisibility(true);
     try {
       await updateSkillVisibility(skill.id, next);
-    } catch {
-      alert("Failed to update visibility");
+    } catch (err) {
+      onError({
+        title: "failed to update visibility",
+        message: (err as Error).message,
+        fatal: false,
+      });
+      return;
     } finally {
       // refresh skill details (mainly for last updated time)
       const fresh = await fetchSkillById(skill.id);
       setSkill(fresh);
-      setUpdatingVisibility(false);
     }
   }
 
@@ -91,178 +93,96 @@ export default function SkillDetailsHeader({
       await cloneSkill(skill.id);
       navigate("/dashboard?view=private");
     } catch (err) {
-      alert((err as Error).message);
+      onError({
+        title: "failed to clone skill",
+        message: (err as Error).message,
+        fatal: false,
+      });
     }
   }
 
   return (
-    <>
-      {/* Header */}
-      <div className="mb-2">
-        <div className="flex justify-between">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 max-w-[60%] line-clamp-1">
-            {skill.name}
-          </h1>
-          <div className="flex items-center gap-4">
-            {/* Public Skill */}
-            {isPublicView && (
+    <div className="h-12 flex items-center justify-between px-4 border-b border-zinc-800 bg-zinc-950">
+      {/* Back */}
+      <button
+        onClick={() => navigate(`/dashboard${fromDashboardState}`)}
+        className="text-xs text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
+      >
+        ← dashboard
+      </button>
+
+      {/* Actions */}
+      <div className="flex items-center gap-4 text-xs text-zinc-400">
+        {isPublicView && (
+          <button
+            onClick={handleCloneSkill}
+            className="hover:text-zinc-200 hover:cursor-pointer"
+          >
+            clone
+          </button>
+        )}
+        {isOwner && (
+          <>
+            {/* Visibility */}
+            {!isCloned && (
               <button
-                onClick={handleCloneSkill}
-                className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
+                onClick={handleToggleVisibility}
+                className="hover:text-(--glitch-green) hover:cursor-pointer"
               >
-                Clone
+                {skill?.isPublic ? "set private" : "set public"}
               </button>
             )}
 
-            {/* Private Skill */}
-            {isOwner && (
+            {skill.latestVersion > 1 && (
               <>
-                {/* Visibility toggle (only if not cloned) */}
-                {!isCloned && (
-                  <button
-                    onClick={handleToggleVisibility}
-                    disabled={updatingVisibility}
-                    className="text-xs rounded-md text-orange-500 hover:underline disabled:opacity-50"
-                  >
-                    {skill.isPublic ? "Make Private" : "Make Public"}
-                  </button>
-                )}
-
-                {/* Edit */}
-                <button
-                  onClick={() => navigate(`/skills/${skill.id}/edit`)}
-                  className="text-xs text-orange-500 hover:underline hover:cursor-pointer"
-                >
-                  Edit
-                </button>
-
                 {/* Versions */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowVersions(!showVersions)}
-                    disabled={showVersions}
-                    className={`text-xs text-orange-500 ${
-                      showVersions ? "" : "hover:underline hover:cursor-pointer"
-                    }`}
-                  >
-                    Versions
-                  </button>
-
-                  {showVersions && (
-                    <div
-                      ref={versionsRef}
-                      className="absolute right-1/2 translate-x-1/2 top-4 z-10 mt-2 w-40 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg"
-                    >
-                      <div className="max-h-40 overflow-y-auto custom-scrollbar py-1 text-sm">
-                        {versions.length === 0 ? (
-                          <div className="px-3 py-2 text-xs text-zinc-500">
-                            No versions found
-                          </div>
-                        ) : (
-                          versions.map((v) => (
-                            <button
-                              key={v.versionNumber}
-                              onClick={() => {
-                                navigate(
-                                  `/skills/${skill.id}?from=${v.versionNumber}&to=${skill.latestVersion}`
-                                );
-                                setShowVersions(false);
-                              }}
-                              className="w-full text-left px-3 py-2 select-option"
-                            >
-                              <div className="flex justify-between">
-                                <span>
-                                  v{v.versionNumber}
-                                  {v.versionNumber === skill.latestVersion && (
-                                    <span className="ml-2 text-xs text-orange-500">
-                                      Latest
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="text-xs text-zinc-500">
-                                  {new Date(v.createdAt).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-500">versions</span>
+                  <VersionsCustomSelect
+                    value={skill.latestVersion}
+                    versions={versions}
+                    onChange={(v) =>
+                      navigate(
+                        `/skills/${skill.id}?from=${v}&to=${skill.latestVersion}`
+                      )
+                    }
+                  />
                 </div>
 
-                {/* Delete */}
+                {/* Diff */}
                 <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-xs text-red-500 hover:underline hover:cursor-pointer"
+                  onClick={() =>
+                    navigate(
+                      `/skills/${skill.id}?from=${skill.latestVersion - 1}&to=${
+                        skill.latestVersion
+                      }`
+                    )
+                  }
+                  className="btn-neutral"
                 >
-                  Delete
+                  diff
                 </button>
               </>
             )}
-          </div>
-        </div>
 
-        {/* Skill Info */}
-        <div className="mt-1 flex flex-wrap gap-2 text-xs text-zinc-500 justify-between">
-          {/* Metadata */}
-          <div className="flex flex-wrap gap-2">
-            <span>
-              {skill.isCloned ? (
-                <>
-                  Cloned from{" "}
-                  <span className="font-medium inline-block max-w-[15vw] truncate align-bottom">
-                    {skill.clonedFromUsername}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Posted by{" "}
-                  <span className="font-medium inline-block max-w-[15vw] truncate align-bottom">
-                    {skill.ownerUsername}
-                  </span>
-                </>
-              )}
-            </span>
-            <span>•</span>
-            <span>v{skill.latestVersion}</span>
-            <span>•</span>
-            <span>{skill.isPublic ? "Public" : "Private"}</span>
-            <span>•</span>
-            <span>
-              Last updated{" "}
-              {new Date(skill.updatedAt).toLocaleString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}
-            </span>
-          </div>
+            {/* Edit */}
+            <button
+              onClick={() => navigate(`/skills/${skill.id}/edit`)}
+              className="btn-neutral"
+            >
+              edit
+            </button>
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-zinc-500">
-            <div className="flex items-center gap-1">
-              <DownloadIcon className="h-3.5 w-3.5" />
-              <span>{skill.downloadCount}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <CloneIcon className="h-3.5 w-3.5" />
-              <span>{skill.cloneCount}</span>
-            </div>
-          </div>
-        </div>
+            {/* Delete */}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="hover:text-red-400 hover:cursor-pointer"
+            >
+              delete
+            </button>
+          </>
+        )}
       </div>
-
-      {/* Description */}
-      {skill.description && (
-        <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400 max-h-[8vh] overflow-auto custom-scrollbar">
-          {skill.description}
-        </p>
-      )}
-    </>
+    </div>
   );
 }

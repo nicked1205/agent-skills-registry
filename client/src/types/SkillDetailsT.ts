@@ -9,6 +9,7 @@ export type SkillDetailsT = {
   latestVersion: number;
   content: string;
   updatedAt: string;
+  createdAt: string;
   isPublic: boolean;
   tags: TagT[];
   isCloned: boolean;
