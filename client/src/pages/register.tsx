@@ -2,6 +2,7 @@ import { useState } from "react";
 import { register } from "../api/auth";
 import { Link } from "react-router-dom";
 import HudCorners from "../components/ui/HudCorners";
+import { PublicLayout } from "../components/ui/PublicLayout";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -72,91 +73,99 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
-      <div className="relative w-full max-w-lg p-8 bg-(--glitch-green-container-bg)">
-        <HudCorners
-          className="text-(--glitch-green) pointer-events-none"
-          offset={0.5}
-          length={16}
-          strokeWidth={3}
-        />
-        <h1 className="text-sm font-semibold text-zinc-200">
-          agent-skills-registry
-        </h1>
-        <p className="mt-1 mb-6 text-xs text-zinc-500">create new account</p>
-
-        {success ? (
-          <p className="text-xs text-zinc-400">
-            account created successfully. you can now{" "}
-            <Link to="/login" className="text-(--glitch-green) hover:underline">
-              log in
-            </Link>
-            .
+    <PublicLayout>
+      <div className="w-7/10 min-h-screen flex items-center bg-zinc-950">
+        <div className="relative w-full p-8 bg-(--glitch-green-container-bg)">
+          <HudCorners
+            className="text-(--glitch-green) pointer-events-none"
+            offset={0.5}
+            length={16}
+            strokeWidth={3}
+          />
+          <h1 className="text-sm font-semibold text-zinc-200">
+            initialize new user
+          </h1>
+          <p className="mt-1 mb-3 text-xs text-zinc-500">
+            <span className="text-(--glitch-green)">&gt;</span> new here?
+            initialize operator
           </p>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block mb-1 text-xs text-zinc-500">
-                username
-              </label>
-              <input
-                type="text"
-                className="w-full input-glitch-green"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
 
-            <div>
-              <label className="block mb-1 text-xs text-zinc-500">
-                password
-              </label>
-              <input
-                type="password"
-                className="w-full input-glitch-green"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 text-xs text-zinc-500">
-                confirm password
-              </label>
-              <input
-                type="password"
-                className="w-full input-glitch-green"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-              />
-            </div>
-
-            {error && (
-              <p className="text-xs text-red-400">
-                error: {error.toLowerCase()}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-glitch-green"
-            >
-              {loading ? "creating account…" : "register"}
-            </button>
-
-            <p className="pt-2 text-xs text-zinc-500">
-              already have an account?{" "}
+          {success ? (
+            <p className="text-xs text-zinc-400">
+              account created successfully. you can now{" "}
               <Link
                 to="/login"
                 className="text-(--glitch-green) hover:underline"
               >
-                login
+                log in
               </Link>
+              .
             </p>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block mb-1 text-xs text-zinc-500">
+                  username
+                </label>
+                <input
+                  type="text"
+                  className="w-full input-glitch-green"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-xs text-zinc-500">
+                  password
+                </label>
+                <input
+                  type="password"
+                  className="w-full input-glitch-green"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-xs text-zinc-500">
+                  confirm password
+                </label>
+                <input
+                  type="password"
+                  className="w-full input-glitch-green"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                />
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-400">
+                  error: {error.toLowerCase()}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full btn-glitch-green"
+              >
+                {loading ? "creating account…" : "register"}
+              </button>
+
+              <p className="pt-2 text-xs text-zinc-500">
+                already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="text-(--glitch-green) hover:underline"
+                >
+                  login
+                </Link>
+              </p>
+            </form>
+          )}
+        </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }

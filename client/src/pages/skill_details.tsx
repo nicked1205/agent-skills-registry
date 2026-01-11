@@ -27,7 +27,7 @@ type SkillDetails = {
 export default function SkillDetails() {
   const [skill, setSkill] = useState<SkillDetailsT | null>(null);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState<{ username: string } | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tags, setTags] = useState<TagT[]>([]);
@@ -49,7 +49,7 @@ export default function SkillDetails() {
   const to = toParam ? Number(toParam) : null;
   const isDiffMode = from !== null && to !== null;
 
-  const isOwner = username?.username === skill?.ownerUsername;
+  const isOwner = username === skill?.ownerUsername;
 
   // fetch user info on mount
   useEffect(() => {

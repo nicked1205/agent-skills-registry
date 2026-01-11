@@ -24,7 +24,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   if (res.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
-    throw new Error("Unauthorized access");
+    return Promise.reject(new Error("Session expired"));
   }
 
   return res;

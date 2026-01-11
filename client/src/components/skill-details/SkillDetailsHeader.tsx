@@ -33,6 +33,10 @@ export default function SkillDetailsHeader({
   const isPublicView = !isOwner && skill?.isPublic;
   const isCloned = skill?.isCloned;
 
+  console.log(isPublicView);
+  console.log(isCloned);
+  console.log(isOwner);
+
   const navigate = useNavigate();
 
   // fetch versions whenever skill changes
@@ -63,7 +67,9 @@ export default function SkillDetailsHeader({
     return () => {
       cancelled = true;
     };
-  }, [skill, onError, setVersions]);
+    // onError is intentionally omitted to avoid effect loops because error handling does not affect version fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skill, setVersions]);
 
   // handle visibility toggle
   async function handleToggleVisibility() {
