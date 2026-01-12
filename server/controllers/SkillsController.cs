@@ -69,11 +69,18 @@ public class SkillsController(AppDbContext db) : ControllerBase {
     [HttpGet("mine")]
     public async Task<IActionResult> GetMySkills(
         [FromQuery] string? search,
-        [FromQuery] string? tags
+        [FromQuery] string? tags,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12
     ) {
         var userId = int.Parse(
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
+
+        const int MAX_PAGE_SIZE = 50;
+
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 || pageSize > MAX_PAGE_SIZE ? 12 : pageSize;
 
         var query = _db.Skills
             .Where(s => s.OwnerId == userId)
@@ -101,7 +108,10 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             }
         }
 
-        var skills = (await query
+        var skills = await query
+            .OrderByDescending(s => s.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(s => new SkillCardDto(
                 s.Id,
                 s.Name,
@@ -122,9 +132,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 s.CloneCount,
                 s.DownloadCount
             ))
-            .ToListAsync())
-            .OrderByDescending(s => s.UpdatedAt)
-            .ToList();
+            .ToListAsync();
 
         return Ok(skills);
     }
@@ -133,8 +141,15 @@ public class SkillsController(AppDbContext db) : ControllerBase {
     [HttpGet]
     public async Task<IActionResult> GetSkills(
         [FromQuery] string? search,
-        [FromQuery] string? tags
+        [FromQuery] string? tags,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12
     ) {
+        const int MAX_PAGE_SIZE = 50;
+
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 || pageSize > MAX_PAGE_SIZE ? 12 : pageSize;
+
         var query = _db.Skills
             .Where(s => s.IsPublic)
             .AsQueryable();
@@ -161,7 +176,12 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             }
         }
 
-        var skills = (await query
+        var total = await query.CountAsync();
+
+        var skills = await query
+            .OrderByDescending(s => s.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(s => new SkillCardDto(
                 s.Id,
                 s.Name,
@@ -182,9 +202,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
                 s.CloneCount,
                 s.DownloadCount
             ))
-            .ToListAsync())
-            .OrderByDescending(s => s.UpdatedAt)
-            .ToList();
+            .ToListAsync();
 
         return Ok(skills);
     }
