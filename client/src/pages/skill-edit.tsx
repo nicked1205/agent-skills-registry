@@ -73,7 +73,7 @@ export default function SkillEdit() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 font-mono text-xs text-zinc-300">
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-xs text-zinc-300">
       {/* Header */}
       <div className="min-h-12 flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 border-b border-zinc-800">
         <div className="flex items-center gap-3 text-zinc-400">

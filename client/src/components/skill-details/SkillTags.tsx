@@ -108,7 +108,7 @@ export default function SkillTags({
 
         {isOwner && canAddMore && (
           <div className="flex gap-2">
-            <span className="text-zinc-600">add</span>
+            <span className="text-zinc-600 hidden">add</span>
             <input
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}

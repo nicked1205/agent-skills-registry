@@ -155,9 +155,11 @@ export default function SkillGrid({
         {/* Ref block to detect scroll beyond */}
         <div
           ref={loadMoreRef}
-          className="h-10 flex items-center justify-center text-xs text-zinc-500"
+          className={`${
+            !(loading && page > 1) ? "" : "h-10"
+          } flex items-center justify-center text-xs text-zinc-500`}
         >
-          {loading && page > 1 && "loading more…"}
+          {loading && page > 1 ? "loading more…" : ""}
         </div>
       </div>
     </>
