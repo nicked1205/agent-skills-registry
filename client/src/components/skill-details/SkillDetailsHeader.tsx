@@ -66,7 +66,7 @@ export default function SkillDetailsHeader({
     return () => {
       cancelled = true;
     };
-    // onError is intentionally omitted to avoid effect loops because error handling does not affect version fetching
+    // onError is warned to be included, but caused infinite backend calls, not worth a callback because it is not valuable to this useEfferct
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skill, setVersions]);
 

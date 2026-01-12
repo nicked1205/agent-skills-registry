@@ -77,6 +77,7 @@ export default function SkillGrid({
     return () => {
       active = false;
     };
+    // warned about onError not being in this dep array, but if added will cause infinite backend calls, not worth to make a callback since onError isnt important in this useEffect
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, reloadKey, appliedSearch, appliedTags, page]);
 

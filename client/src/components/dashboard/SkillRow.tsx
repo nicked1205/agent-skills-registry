@@ -22,7 +22,7 @@ export default function SkillRowCard({ skill, username }: Props) {
       onClick={() =>
         navigate(`/skills/${skill.id}`, { state: { from: location.search } })
       }
-      className="relative group cursor-pointer border border-zinc-900 bg-zinc-950 px-4 py-2 flex items-center text-xs hover:bg-(--glitch-green-container-bg) gap-[2%]"
+      className="relative group cursor-pointer border border-zinc-900 bg-zinc-950 px-4 py-2 flex items-center text-xs hover:bg-(--glitch-green-container-bg) gap-[3%]"
     >
       <HudCorners
         className="text-(--glitch-green) opacity-0 group-hover:opacity-60"
@@ -35,7 +35,7 @@ export default function SkillRowCard({ skill, username }: Props) {
       <div className="w-[25%] text-zinc-100 truncate">{skill.name}</div>
 
       {/* Owner */}
-      <div className="w-[20%] flex items-center gap-1 text-zinc-400 min-w-0">
+      <div className="w-[15%] flex items-center gap-1 text-zinc-400 min-w-0">
         <span className="truncate">
           {skill.isCloned
             ? skill.clonedFromUsername
@@ -50,7 +50,7 @@ export default function SkillRowCard({ skill, username }: Props) {
       </div>
 
       {/* Updated */}
-      <div className="w-[13%] text-zinc-500">
+      <div className="w-[15%] text-zinc-500 whitespace-nowrap">
         v{skill.latestVersion}
         {" • "}
         {new Date(skill.updatedAt).toLocaleDateString()}

@@ -140,7 +140,7 @@ export default function SkillDetails() {
         onError={(err) => setSystemError(err)}
       />
 
-      <div className="flex flex-col md:flex-row gap-4 px-3 sm:px-4 py-4 h-[calc(100vh-48px)]">
+      <div className="flex flex-col md:flex-row gap-4 p-3 sm:p-4 h-[calc(100vh-48px)]">
         {/* Metadata */}
         <div className="md:h-full md:w-3/10 min-h-0 border border-zinc-800 bg-zinc-950">
           <div className="h-full min-h-0 overflow-y-auto custom-scrollbar">

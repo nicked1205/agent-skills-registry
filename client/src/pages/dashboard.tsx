@@ -39,7 +39,7 @@ export default function Dashboard() {
   const [tagSearch, setTagSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
 
-  // applied filters (important)
+  // applied filters
   const [appliedSearch, setAppliedSearch] = useState(initialSearch);
   const [appliedTags, setAppliedTags] = useState<string[]>(initialTags);
 

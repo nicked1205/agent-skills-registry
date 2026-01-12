@@ -76,6 +76,7 @@ export default function DashboardControls({
         {/* Add Skill */}
         <button
           onClick={onAddSkill}
+          disabled={view == "public"}
           className={`text-xs border px-3 py-1 ${
             view === "public"
               ? "border-zinc-800 text-zinc-600"
