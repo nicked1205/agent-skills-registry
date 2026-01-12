@@ -108,8 +108,10 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             }
         }
 
+        var total = await query.CountAsync();
+
         var skills = await query
-            .OrderByDescending(s => s.UpdatedAt)
+            .OrderByDescending(s => s.UpdatedAtUnix)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(s => new SkillCardDto(
@@ -134,7 +136,10 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             ))
             .ToListAsync();
 
-        return Ok(skills);
+        return Ok(new PaginatedResult<SkillCardDto>(
+            skills,
+            total
+        ));
     }
 
     // get all public skills (auth required to view)
@@ -179,7 +184,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         var total = await query.CountAsync();
 
         var skills = await query
-            .OrderByDescending(s => s.UpdatedAt)
+            .OrderByDescending(s => s.UpdatedAtUnix)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(s => new SkillCardDto(
@@ -204,7 +209,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             ))
             .ToListAsync();
 
-        return Ok(skills);
+        return Ok(new PaginatedResult<SkillCardDto>(skills, total));
     }
 
     // delete a skill owned by the authenticated user
@@ -249,6 +254,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
         skill.IsPublic = request.IsPublic;
         skill.UpdatedAt = DateTimeOffset.UtcNow;
+        skill.UpdatedAtUnix = skill.UpdatedAt.ToUnixTimeSeconds();
 
         await _db.SaveChangesAsync();
 
@@ -339,6 +345,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         skill.Name = parsed.Name;
         skill.Description = parsed.Description;
         skill.UpdatedAt = DateTimeOffset.UtcNow;
+        skill.UpdatedAtUnix = skill.UpdatedAt.ToUnixTimeSeconds();
 
         _db.SkillVersions.Add(version);
 
@@ -530,7 +537,8 @@ public class SkillsController(AppDbContext db) : ControllerBase {
             IsCloned = true,
             ClonedFromUsername = sourceSkill.Owner.Username,
             CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
+            UpdatedAt = DateTimeOffset.UtcNow,
+            UpdatedAtUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
 
         _db.Skills.Add(clonedSkill);
@@ -679,6 +687,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         skill.Name = parsed.Name;
         skill.Description = parsed.Description;
         skill.UpdatedAt = DateTimeOffset.UtcNow;
+        skill.UpdatedAtUnix = skill.UpdatedAt.ToUnixTimeSeconds();
 
         _db.SkillVersions.Add(newVersion);
         await _db.SaveChangesAsync();

@@ -64,8 +64,10 @@ export default function SkillCard({ skill, username }: Props) {
 
       {/* Metadata */}
       <div className="flex items-center justify-between text-[11px] text-zinc-500 mt-auto pt-2">
-        <span>v{skill.latestVersion}</span>
-        <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+        <div className="flex items-center gap-3">
+          <span>v{skill.latestVersion}</span>
+          <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+        </div>
 
         {!skill.isCloned && (
           <div className="flex items-center gap-3">

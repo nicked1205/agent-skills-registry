@@ -28,29 +28,30 @@ export async function fetchPublicSkills(): Promise<SkillCardT[]> {
 export async function fetchSkills(
   view: "private" | "public",
   search: string,
-  tags: string[]
+  tags: string[],
+  page: number,
+  pageSize = 12
 ) {
   const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
 
-  if (search.trim()) {
-    params.set("search", search.trim());
-  }
+  if (search.trim()) params.set("search", search.trim());
+  if (tags.length) params.set("tags", tags.join(","));
 
-  if (tags.length > 0) {
-    params.set("tags", tags.join(","));
-  }
+  const path =
+    view === "private" ? `/skills/mine?${params}` : `/skills?${params}`;
 
-  const base = view === "private" ? "/skills/mine" : "/skills";
-  const url = params.toString() ? `${base}?${params}` : base;
-
-  const res = await apiFetch(`${url}`);
+  const res = await apiFetch(path);
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to fetch skills");
+    throw new Error(await res.text());
   }
 
-  return res.json();
+  return res.json() as Promise<{
+    items: SkillCardT[];
+    total: number;
+  }>;
 }
 
 // upload new skill file

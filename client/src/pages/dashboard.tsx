@@ -235,7 +235,7 @@ export default function Dashboard() {
         {/* Search panel */}
         <div
           className={`transition-all duration-300 ease-in-out ${
-            searchOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+            searchOpen ? "max-h-40 opacity-100 mb-4" : "max-h-0 opacity-0"
           }`}
         >
           <div className="flex items-center gap-2 p-1">

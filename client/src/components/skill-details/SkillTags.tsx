@@ -38,9 +38,12 @@ export default function SkillTags({
     }
 
     if (!(raw.length <= 20 && /^[a-zA-Z0-9._-]+$/.test(raw))) {
-      alert(
-        "Tag must be 20 characters or fewer and only contain letters, numbers, '.', '-', or '_'"
-      );
+      onError({
+        title: "failed to add tag",
+        message:
+          "Tag must be 1-20 characters long and can only contain letters, numbers, dots, underscores, and hyphens",
+        fatal: false,
+      });
       return;
     }
 
@@ -92,7 +95,7 @@ export default function SkillTags({
             {isOwner && (
               <button
                 onClick={() => handleDeleteTag(tag.id)}
-                className="text-zinc-600 hover:text-red-400 hover:cursor-pointer"
+                className="btn-red-tool text-xs"
                 title="remove tag"
               >
                 ×

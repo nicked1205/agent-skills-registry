@@ -22,6 +22,7 @@ public class Skill {
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public long UpdatedAtUnix { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
     public List<SkillVersion> Versions { get; set; } = [];
     public List<SkillTag> SkillTags { get; set; } = [];

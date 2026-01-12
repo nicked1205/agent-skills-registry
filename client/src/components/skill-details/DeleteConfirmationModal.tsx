@@ -53,7 +53,7 @@ export default function DeleteConfirmationModal({
           <span className="text-red-400">⚠ system warning</span>
           <button
             onClick={() => setShowDeleteConfirm(false)}
-            className="text-zinc-500 hover:text-red-400 hover:cursor-pointer"
+            className="btn-red-tool"
           >
             ×
           </button>
