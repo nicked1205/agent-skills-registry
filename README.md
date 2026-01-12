@@ -95,7 +95,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/nicked1205/agent-skills-registry.git
 cd agent-skills-registry
 ```
 
