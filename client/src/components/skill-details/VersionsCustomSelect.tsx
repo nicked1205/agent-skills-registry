@@ -34,23 +34,14 @@ export default function VersionsCustomSelect({
   const selected = versions.find((v) => v.versionNumber === value);
 
   return (
-    <div
-      ref={ref}
-      className="relative inline-flex items-center gap-2 text-xs font-mono"
-    >
+    <div ref={ref} className="relative inline-flex items-center gap-2 text-xs">
       {label && <span className="text-zinc-600 select-none">{label}</span>}
 
       {/* Button */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`
-          flex items-center gap-2 px-2 py-1
-          border border-zinc-800 bg-zinc-950
-          text-zinc-300 hover:text-(--glitch-green)
-          hover:border-(--glitch-green-bg)
-          transition-colors cursor-pointer
-        `}
+        className={`flex items-center gap-2 px-2 py-1 border border-zinc-700 bg-zinc-950 text-zinc-300 hover:text-(--glitch-green) hover:border-(--glitch-green-bg)transition-colors cursor-pointer`}
       >
         <span>{selected ? `v${selected.versionNumber}` : "—"}</span>
         <span className="text-zinc-600 select-none">▾</span>
@@ -58,15 +49,7 @@ export default function VersionsCustomSelect({
 
       {/* Dropdown */}
       {open && (
-        <div
-          className="
-            absolute top-full right-0 z-20 mt-1
-            w-44 max-h-48 overflow-y-auto
-            border border-zinc-800 bg-zinc-950
-            shadow-[0_0_0_1px_rgba(0,0,0,0.6)]
-            custom-scrollbar
-          "
-        >
+        <div className="absolute top-full left-0 z-20 mt-1 w-13 sm:w-32 md:w-44 max-h-48 overflow-y-auto border border-zinc-700 bg-zinc-950 shadow-[0_0_0_1px_rgba(0,0,0,0.6)] custom-scrollbar">
           {versions.map((v) => {
             const active = v.versionNumber === value;
 
@@ -79,8 +62,7 @@ export default function VersionsCustomSelect({
                 }}
                 disabled={active || v.versionNumber === disable}
                 className={`
-                  w-full flex justify-between px-3 py-1.5
-                  text-left font-mono text-xs
+                  w-full flex justify-between px-3 py-1.5 text-left text-xs
                   ${
                     active
                       ? "text-(--glitch-green) bg-(--glitch-green-highlight) cursor-default"
@@ -91,7 +73,7 @@ export default function VersionsCustomSelect({
                 `}
               >
                 <span>v{v.versionNumber}</span>
-                <span className="text-zinc-600">
+                <span className="hidden sm:block text-zinc-600">
                   {new Date(v.createdAt).toLocaleDateString()}
                 </span>
               </button>

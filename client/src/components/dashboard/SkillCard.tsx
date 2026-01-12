@@ -49,7 +49,7 @@ export default function SkillCard({ skill, username }: Props) {
         )}
 
         {skill.tags && skill.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 max-h-12 overflow-hidden">
             {skill.tags.map((tag) => (
               <span
                 key={tag.id}

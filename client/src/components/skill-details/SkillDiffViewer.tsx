@@ -100,7 +100,7 @@ export default function SkillDiffViewer({
   return (
     <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
       {/* Toolbar */}
-      <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500">
+      <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500 justify-between">
         <div className="flex items-center gap-2">
           {isRollback ? (
             <span className="text-zinc-400">v{from}</span>
@@ -129,26 +129,30 @@ export default function SkillDiffViewer({
             }
           />
         </div>
-
-        <button
-          onClick={() => navigate(`/skills/${skillId}`)}
-          className="btn-neutral"
-        >
-          exit diff
-        </button>
-
-        {isRollback && (
+        <div className="flex items-center gap-6">
           <button
-            onClick={() => setShowRollbackConfirm(true)}
-            className="btn-yellow-tool"
+            onClick={() => navigate(`/skills/${skillId}`)}
+            className="btn-neutral"
           >
-            rollback to selected version
+            exit <span className="hidden md:inline-block">diff</span>
           </button>
-        )}
+
+          {isRollback && (
+            <button
+              onClick={() => setShowRollbackConfirm(true)}
+              className="btn-yellow-tool"
+            >
+              rollback{" "}
+              <span className="hidden md:inline-block">
+                to selected version
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto text-xs md:text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
         {from == to ? (
           <div className="h-full flex items-center justify-center text-xs text-zinc-500">
             select two different versions to compare
@@ -157,7 +161,7 @@ export default function SkillDiffViewer({
           diff?.lines.map((line, i) => (
             <div
               key={i}
-              className={`flex px-3 py-0.5 ${
+              className={`flex px-3 py-0.5 break-all ${
                 line.type === "add"
                   ? "bg-(--glitch-green-highlight) text-zinc-200"
                   : line.type === "remove"
@@ -168,10 +172,10 @@ export default function SkillDiffViewer({
               }`}
             >
               {/* Line numbers */}
-              <span className="w-12 shrink-0 text-right pr-2 text-zinc-600">
+              <span className="w-10 md:w-12 shrink-0 text-right pr-2 text-zinc-600">
                 {line.oldLineNumber ?? ""}
               </span>
-              <span className="w-12 shrink-0 text-right pr-2 text-zinc-600">
+              <span className="w-10 md:w-12 shrink-0 text-right pr-2 text-zinc-600">
                 {line.newLineNumber ?? ""}
               </span>
 

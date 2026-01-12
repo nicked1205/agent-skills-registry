@@ -3,28 +3,6 @@ import type { SkillDetailsT } from "../types";
 import type { SkillVersionT } from "../types";
 import { apiFetch } from "./client";
 
-// get private skills
-export async function fetchMySkills(): Promise<SkillCardT[]> {
-  const res = await apiFetch("skills/mine");
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to get your skills");
-  }
-  return res.json();
-}
-
-// GET public skills
-export async function fetchPublicSkills(): Promise<SkillCardT[]> {
-  const res = await apiFetch("/skills");
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Failed to get public skills");
-  }
-  return res.json();
-}
-
 export async function fetchSkills(
   view: "private" | "public",
   search: string,
@@ -45,7 +23,8 @@ export async function fetchSkills(
   const res = await apiFetch(path);
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    const text = await res.text();
+    throw new Error(text || "Failed to get skills");
   }
 
   return res.json() as Promise<{

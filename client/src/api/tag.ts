@@ -40,10 +40,10 @@ export async function deleteSkillTag(skillId: number, tagId: number) {
 }
 
 // get every tags
-export async function fetchAllTags(search?: string) {
+export async function fetchAllUsedTags(search?: string) {
   const qs = search ? `?search=${encodeURIComponent(search)}` : "";
 
-  const res = await apiFetch(`/skills/tags${qs}`);
+  const res = await apiFetch(`/skills/tags/used${qs}`);
 
   if (!res.ok) {
     const text = await res.text();

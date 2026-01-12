@@ -103,7 +103,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
             foreach (var tag in tagList) {
                 query = query.Where(s =>
-                    s.SkillTags.Any(st => st.Tag.Name == tag)
+                    s.SkillTags.Any(st => st.Tag.Name.ToLower() == tag)
                 );
             }
         }
@@ -176,7 +176,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
             foreach (var tag in tagList) {
                 query = query.Where(s =>
-                    s.SkillTags.Any(st => st.Tag.Name == tag)
+                    s.SkillTags.Any(st => st.Tag.Name.ToLower() == tag)
                 );
             }
         }
@@ -475,6 +475,18 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         if (skillTag == null) return NoContent();
 
         skill.SkillTags.Remove(skillTag);
+
+        // delete unused tags from the system
+        var tagStillUsed = await _db.SkillTags
+        .AnyAsync(st => st.TagId == tagId);
+
+        if (!tagStillUsed) {
+            var tag = await _db.Tags.FindAsync(tagId);
+            if (tag != null) {
+                _db.Tags.Remove(tag);
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         return NoContent();
@@ -495,6 +507,34 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         var tags = await query
             .OrderBy(t => t.Name)
             .Take(limit)
+            .Select(t => new TagDto(t.Id, t.Name))
+            .ToListAsync();
+
+        return Ok(tags);
+    }
+
+    // get tags that are being used
+    [HttpGet("tags/used")]
+    public async Task<IActionResult> GetUsedTags(
+        [FromQuery] string? search,
+        [FromQuery] bool publicOnly = false
+    ) {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var query = _db.Tags
+            .Where(t => t.SkillTags.Any(st =>
+                publicOnly
+                    ? st.Skill.IsPublic
+                    : st.Skill.OwnerId == userId
+            ));
+
+        if (!string.IsNullOrWhiteSpace(search)) {
+            var term = search.Trim().ToLower();
+            query = query.Where(t => t.Name.ToLower().Contains(term));
+        }
+
+        var tags = await query
+            .OrderBy(t => t.Name)
             .Select(t => new TagDto(t.Id, t.Name))
             .ToListAsync();
 

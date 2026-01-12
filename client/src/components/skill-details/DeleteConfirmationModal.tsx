@@ -64,7 +64,7 @@ export default function DeleteConfirmationModal({
           <p>You are about to permanently delete:</p>
 
           <p className="text-red-400">
-            {">"} <span className="text-zinc-100">{skill.name}</span>
+            {">"} <span className="text-zinc-100 break-all">{skill.name}</span>
           </p>
 
           <p className="text-zinc-500">

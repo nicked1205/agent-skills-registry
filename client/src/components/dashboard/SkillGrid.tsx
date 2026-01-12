@@ -12,6 +12,7 @@ interface Props {
   appliedTags: string[];
   onError: (err: ErrorT) => void;
   layout: "card" | "row";
+  isNarrow: boolean;
 }
 
 export default function SkillGrid({
@@ -22,6 +23,7 @@ export default function SkillGrid({
   appliedTags,
   onError,
   layout,
+  isNarrow,
 }: Props) {
   const [skills, setSkills] = useState<SkillCardT[]>([]);
   const [loading, setLoading] = useState(false);
@@ -134,10 +136,7 @@ export default function SkillGrid({
         {layout === "card" && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mx-3">
             {skills.map((skill) => (
-              <div
-                key={skill.id}
-                className="h-[calc((100vh-10rem)/3)] flex flex-col"
-              >
+              <div key={skill.id} className="h-44 flex flex-col">
                 <SkillCard skill={skill} username={username} />
               </div>
             ))}
@@ -145,7 +144,7 @@ export default function SkillGrid({
         )}
 
         {/* Grid Row */}
-        {layout === "row" && (
+        {layout === "row" && !isNarrow && (
           <div className="flex flex-col gap-2 mx-3">
             {skills.map((skill) => (
               <SkillRow key={skill.id} skill={skill} username={username} />

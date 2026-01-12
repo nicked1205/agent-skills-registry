@@ -85,10 +85,10 @@ export default function SkillTags({
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs text-zinc-400 whitespace-nowrap">
+    <div className="flex items-center gap-2 text-xs text-zinc-400">
       <span className="text-zinc-500">tags:</span>
 
-      <div className="flex flex-wrap gap-x-3 gap-y-1 max-h-12 overflow-hidden">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 max-h-20 overflow-hidden">
         {tags.length === 0 && <span className="text-zinc-600">none</span>}
 
         {tags.map((tag) => (
@@ -107,7 +107,7 @@ export default function SkillTags({
         ))}
 
         {isOwner && canAddMore && (
-          <>
+          <div className="flex gap-2">
             <span className="text-zinc-600">add</span>
             <input
               value={newTag}
@@ -118,7 +118,7 @@ export default function SkillTags({
               className="w-24 bg-transparent border-b border-zinc-700 focus:border-(--glitch-green-bg) focus:outline-none text-zinc-200 placeholder:text-zinc-700 caret-(--glitch-green)"
             />
             <span className="text-zinc-600 select-none">enter↵</span>
-          </>
+          </div>
         )}
 
         {isOwner && !canAddMore && (

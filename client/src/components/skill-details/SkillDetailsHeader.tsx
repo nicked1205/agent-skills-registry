@@ -107,13 +107,13 @@ export default function SkillDetailsHeader({
   }
 
   return (
-    <div className="h-12 flex items-center justify-between px-4 border-b border-zinc-800 bg-zinc-950">
+    <div className="min-h-12 flex flex-row items-center justify-between gap-6 md:gap-2 px-4 py-2 border-b border-zinc-800 bg-zinc-950">
       {/* Back */}
       <button
         onClick={() => navigate(`/dashboard${fromDashboardState}`)}
-        className="text-xs btn-neutral"
+        className="text-lg md:text-xs btn-neutral"
       >
-        ← dashboard
+        ← <span className="hidden md:inline-block">dashboard</span>
       </button>
 
       {/* Actions */}
@@ -129,7 +129,7 @@ export default function SkillDetailsHeader({
             {!isCloned && (
               <button
                 onClick={handleToggleVisibility}
-                className="btn-glitch-green-tool"
+                className="btn-glitch-green-tool whitespace-nowrap"
               >
                 {skill?.isPublic ? "set private" : "set public"}
               </button>
@@ -138,7 +138,7 @@ export default function SkillDetailsHeader({
             {skill.latestVersion > 1 && (
               <>
                 {/* Versions */}
-                <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
                   <span className="text-zinc-500">versions</span>
                   <VersionsCustomSelect
                     value={skill.latestVersion}

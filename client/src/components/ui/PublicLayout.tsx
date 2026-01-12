@@ -15,7 +15,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Content (right now just login and register) */}
-      <div className="flex flex-1 items-center justify-center">{children}</div>
+      <div className="flex flex-1 items-center justify-center px-4 sm:px-6">
+        <div className="w-full max-w-lg">{children}</div>
+      </div>
     </div>
   );
 }

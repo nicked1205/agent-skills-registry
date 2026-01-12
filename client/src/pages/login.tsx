@@ -29,77 +29,63 @@ export default function Login() {
 
   return (
     <PublicLayout>
-      <div className="w-7/10 min-h-screen flex items-center bg-zinc-950">
-        <div className="relative w-full p-8 bg-(--glitch-green-container-bg)">
-          <HudCorners
-            className="text-(--glitch-green) pointer-events-none"
-            offset={0.5}
-            length={16}
-            strokeWidth={3}
-          />
-          {/* Header */}
-          <h1 className="text-sm font-semibold text-zinc-200">
-            resume session
-          </h1>
-          <p className="mt-1 mb-3 text-xs text-zinc-500">
-            <span className="text-(--glitch-green)">&gt;</span> existing
-            operator? authenticate
-          </p>
+      <div className="relative w-full p-6 sm:p-8 bg-(--glitch-green-container-bg)">
+        <HudCorners
+          className="text-(--glitch-green) pointer-events-none"
+          offset={0.5}
+          length={16}
+          strokeWidth={3}
+        />
 
-          {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block mb-1 text-xs text-zinc-500">
-                username
-              </label>
-              <input
-                type="text"
-                className="w-full input-glitch-green"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
+        <h1 className="text-sm font-semibold text-zinc-200">resume session</h1>
+        <p className="mt-1 mb-3 text-xs text-zinc-500">
+          <span className="text-(--glitch-green)">&gt;</span> existing operator?
+          authenticate
+        </p>
 
-            <div>
-              <label className="block mb-1 text-xs text-zinc-500">
-                password
-              </label>
-              <input
-                type="password"
-                className="w-full input-glitch-green"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block mb-1 text-xs text-zinc-500">username</label>
+            <input
+              type="text"
+              className="w-full input-glitch-green"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
 
-            {/* Error message */}
-            {error && (
-              <p className="text-xs text-red-400">
-                error: {error.toLowerCase()}
-              </p>
-            )}
+          <div>
+            <label className="block mb-1 text-xs text-zinc-500">password</label>
+            <input
+              type="password"
+              className="w-full input-glitch-green"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className=" w-full btn-glitch-green"
+          {error && (
+            <p className="text-xs text-red-400">error: {error.toLowerCase()}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full btn-glitch-green"
+          >
+            {loading ? "authenticating…" : "login"}
+          </button>
+
+          <p className="pt-2 text-xs text-zinc-500">
+            no account?{" "}
+            <Link
+              to="/register"
+              className="text-(--glitch-green) hover:underline"
             >
-              {loading ? "authenticating…" : "login"}
-            </button>
-
-            {/* Register link */}
-            <p className="pt-2 text-xs text-zinc-500">
-              no account?{" "}
-              <Link
-                to="/register"
-                className="text-(--glitch-green) hover:underline"
-              >
-                register
-              </Link>
-            </p>
-          </form>
-        </div>
+              register
+            </Link>
+          </p>
+        </form>
       </div>
     </PublicLayout>
   );

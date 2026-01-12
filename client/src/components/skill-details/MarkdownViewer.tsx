@@ -62,8 +62,8 @@ export default function MarkdownViewer({ skill, onError }: Props) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 p-4 overflow-y-auto text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
-        <pre className="text-sm whitespace-pre-wrap">
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto text-zinc-200 max-w-none custom-scrollbar">
+        <pre className="text-xs md:text-sm whitespace-pre-wrap break-all leading-relaxed">
           {skill.content || "// No content in this version"}
         </pre>
       </div>
