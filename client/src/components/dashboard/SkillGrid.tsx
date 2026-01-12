@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import type { ErrorT, SkillCardT } from "../../types";
 import { fetchSkills } from "../../api/skills";
 import SkillCard from "../dashboard/SkillCard";
+import SkillRow from "../dashboard/SkillRow";
 
 interface Props {
   username: string | null;
@@ -10,6 +11,7 @@ interface Props {
   appliedSearch: string;
   appliedTags: string[];
   onError: (err: ErrorT) => void;
+  layout: "card" | "row";
 }
 
 export default function SkillGrid({
@@ -19,6 +21,7 @@ export default function SkillGrid({
   appliedSearch,
   appliedTags,
   onError,
+  layout,
 }: Props) {
   const [skills, setSkills] = useState<SkillCardT[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,7 +75,8 @@ export default function SkillGrid({
     return () => {
       active = false;
     };
-  }, [view, reloadKey, appliedSearch, appliedTags, page, onError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, reloadKey, appliedSearch, appliedTags, page]);
 
   // reset skills when view, search, tags, or reloadKey changes
   useEffect(() => {
@@ -111,11 +115,13 @@ export default function SkillGrid({
   return (
     <>
       {page === 1 && loading && (
-        <p className="text-xs text-zinc-500 ml-2 mt-4">loading skills…</p>
+        <p className="text-xs text-zinc-500 justify-center flex mt-6">
+          loading skills…
+        </p>
       )}
 
       {!loading && skills.length === 0 && (
-        <p className="text-xs text-zinc-500 ml-2 mt-4">
+        <p className="text-xs text-zinc-500 justify-center flex mt-6">
           {view === "private" ? "no local entries" : "no public entries"}
         </p>
       )}
@@ -124,18 +130,30 @@ export default function SkillGrid({
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto custom-scrollbar"
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mx-3">
-          {skills.map((skill, index) => (
-            <div
-              key={skill.id}
-              className="h-[calc((100vh-10rem)/3)] flex flex-col"
-            >
-              <SkillCard skill={skill} username={username} />
-            </div>
-          ))}
-        </div>
+        {/* Grid Card */}
+        {layout === "card" && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mx-3">
+            {skills.map((skill) => (
+              <div
+                key={skill.id}
+                className="h-[calc((100vh-10rem)/3)] flex flex-col"
+              >
+                <SkillCard skill={skill} username={username} />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* sentinel — MUST be inside scroll container */}
+        {/* Grid Row */}
+        {layout === "row" && (
+          <div className="flex flex-col gap-2 mx-3">
+            {skills.map((skill) => (
+              <SkillRow key={skill.id} skill={skill} username={username} />
+            ))}
+          </div>
+        )}
+
+        {/* Ref block to detect scroll beyond */}
         <div
           ref={loadMoreRef}
           className="h-10 flex items-center justify-center text-xs text-zinc-500"

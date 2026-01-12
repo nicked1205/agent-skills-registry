@@ -420,7 +420,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         // normalize tag name in BE in case haven''t done in frontend
         var normalized = dto.Tag.Trim().ToLowerInvariant();
 
-        if (normalized.Length > 20) return BadRequest("Tag must be 20 characters or fewer");
+        if (normalized.Length > 16) return BadRequest("Tag must be 16 characters or fewer");
 
         if (!normalized.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '.' || c == '-')) return BadRequest("Tag may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
 
@@ -432,6 +432,8 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         if (skill == null) return NotFound("Cannot find skill");
 
         if (skill.OwnerId != userId) return Forbid("You do not have permission to add a tag to this skill");
+
+        if (skill.SkillTags.Count >= 5) return BadRequest("A skill may have at most 5 tags");
 
         // check if tag already exists globally
         var tag = await _db.Tags.FirstOrDefaultAsync(t => t.Name == normalized);

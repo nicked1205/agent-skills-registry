@@ -35,6 +35,9 @@ export default function SkillDetailsHeader({
 
   const navigate = useNavigate();
 
+  const layout =
+    new URLSearchParams(fromDashboardState).get("layout") || "grid";
+
   // fetch versions whenever skill changes
   useEffect(() => {
     if (!skill) return;
@@ -93,7 +96,7 @@ export default function SkillDetailsHeader({
 
     try {
       await cloneSkill(skill.id);
-      navigate("/dashboard?view=private");
+      navigate(`/dashboard?view=private&layout=${layout}`);
     } catch (err) {
       onError({
         title: "failed to clone skill",

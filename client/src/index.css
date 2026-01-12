@@ -40,7 +40,7 @@
     --glitch-green: rgb(74, 246, 38);
     --glitch-green-bg: rgba(74, 246, 38, 0.2);
     --glitch-green-component-bg: rgba(74, 246, 38, 0.1);
-    --glitch-green-container-bg: rgba(74, 246, 38, 0.03);
+    --glitch-green-container-bg: rgba(74, 246, 38, 0.05);
     --glitch-green-highlight: rgba(74, 246, 38, 0.1);
     --red-highlight: rgba(239, 68, 68, 0.1);
     --glitch-green-word-highlight: rgba(74, 246, 38, 0.3);

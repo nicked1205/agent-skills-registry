@@ -53,7 +53,7 @@ export default function SkillCard({ skill, username }: Props) {
             {skill.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500"
+                className="max-w-3/10 border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 truncate"
               >
                 {tag.name}
               </span>

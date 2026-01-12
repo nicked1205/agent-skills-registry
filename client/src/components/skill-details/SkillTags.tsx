@@ -11,7 +11,7 @@ export interface Props {
   onError: (err: ErrorT) => void;
 }
 
-const MAX_TAGS = 10;
+const MAX_TAGS = 5;
 
 export default function SkillTags({
   isOwner,
@@ -37,11 +37,13 @@ export default function SkillTags({
       return;
     }
 
-    if (!(raw.length <= 20 && /^[a-zA-Z0-9._-]+$/.test(raw))) {
+    if (
+      !(raw.length >= 1 && raw.length <= 16 && /^[a-zA-Z0-9._-]+$/.test(raw))
+    ) {
       onError({
         title: "failed to add tag",
         message:
-          "Tag must be 1-20 characters long and can only contain letters, numbers, dots, underscores, and hyphens",
+          "Tag must be 1-16 characters long and can only contain letters, numbers, dots, underscores, and hyphens",
         fatal: false,
       });
       return;

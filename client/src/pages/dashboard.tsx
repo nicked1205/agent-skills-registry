@@ -46,6 +46,10 @@ export default function Dashboard() {
 
   const [systemError, setSystemError] = useState<ErrorT | null>(null);
 
+  const [layout, setLayout] = useState<"card" | "row">(
+    () => (localStorage.getItem("layout") as "card" | "row") || "card"
+  );
+
   const fileInputRef = useRef<HTMLInputElement | null>(null); // ref for Add Skill
   const navigate = useNavigate();
 
@@ -177,9 +181,16 @@ export default function Dashboard() {
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      <DashboardHeader username={username} />
+      <DashboardHeader
+        username={username}
+        layout={layout}
+        onLayoutChange={(newLayout) => {
+          setLayout(newLayout);
+          localStorage.setItem("layout", newLayout);
+        }}
+      />
 
-      <main className="p-6 flex flex-col flex-1 overflow-hidden">
+      <main className="px-6 py-4 flex flex-col flex-1 overflow-hidden">
         <div className="mb-3 flex items-center justify-between">
           {/* Toggle Public/Private */}
           <div className="flex items-center gap-4 text-xs">
@@ -344,6 +355,7 @@ export default function Dashboard() {
           appliedSearch={appliedSearch}
           appliedTags={appliedTags}
           onError={(err) => setSystemError(err)}
+          layout={layout}
         />
       </main>
       {systemError && !systemError.fatal && (
