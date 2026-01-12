@@ -71,6 +71,26 @@
     @apply text-zinc-400 hover:text-zinc-200 hover:cursor-pointer;
   }
 
+  .btn-glitch-green-tool {
+    @apply text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer;
+  }
+
+  .btn-red-tool {
+    @apply text-zinc-400 hover:text-red-400 hover:cursor-pointer;
+  }
+
+  .btn-yellow-tool {
+    @apply text-zinc-400 hover:text-amber-400 hover:cursor-pointer;
+  }
+
+  .btn-edit-action-confirm {
+    @apply text-amber-400 hover:text-amber-300 hover:cursor-pointer;
+  }
+
+  .btn-destructive-action-confirm {
+    @apply text-amber-400 hover:text-amber-300 hover:cursor-pointer;
+  }
+
   .input-glitch-green {
     @apply bg-(--glitch-green-container-bg) border border-zinc-800 px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-(--glitch-green) caret-(--glitch-green);
   }

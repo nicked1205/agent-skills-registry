@@ -3,6 +3,7 @@ import type { ErrorT, SkillVersionT, VersionsDiffT } from "../../types";
 import { fetchSkillDiff } from "../../api/skills";
 import { useNavigate } from "react-router-dom";
 import VersionsCustomSelect from "./VersionsCustomSelect";
+import RollbackConfirmationModal from "./RollbackConfirmationModal";
 
 interface Props {
   skillId: number;
@@ -10,6 +11,9 @@ interface Props {
   to: number;
   onError: (err: ErrorT) => void;
   versions: SkillVersionT[];
+  isRollback: boolean;
+  reloadKey: number;
+  setReloadKey: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function SkillDiffViewer({
@@ -18,8 +22,12 @@ export default function SkillDiffViewer({
   to,
   onError,
   versions,
+  isRollback,
+  reloadKey,
+  setReloadKey,
 }: Props) {
   const [diff, setDiff] = useState<VersionsDiffT | null>(null);
+  const [showRollbackConfirm, setShowRollbackConfirm] = useState(false);
 
   const navigate = useNavigate();
 
@@ -53,7 +61,7 @@ export default function SkillDiffViewer({
     return () => {
       cancelled = true;
     };
-  }, [skillId, from, to, onError]);
+  }, [skillId, from, to, onError, reloadKey]);
 
   function renderLineContent(line: VersionsDiffT["lines"][number]) {
     if (line.type !== "modify" || !line.words) {
@@ -94,29 +102,49 @@ export default function SkillDiffViewer({
       {/* Toolbar */}
       <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500">
         <div className="flex items-center gap-2">
-          <VersionsCustomSelect
-            value={from}
-            versions={versions}
-            onChange={(v) => navigate(`/skills/${skillId}?from=${v}&to=${to}`)}
-          />
-
+          {isRollback ? (
+            <span className="text-zinc-400">v{from}</span>
+          ) : (
+            <VersionsCustomSelect
+              value={from}
+              versions={versions}
+              disable={to}
+              onChange={(v) =>
+                navigate(
+                  `/skills/${skillId}?from=${v}&to=${to}&allowRollback=${isRollback}`
+                )
+              }
+            />
+          )}
           <span className="text-zinc-600">→</span>
 
           <VersionsCustomSelect
             value={to}
             versions={versions}
+            disable={from}
             onChange={(v) =>
-              navigate(`/skills/${skillId}?from=${from}&to=${v}`)
+              navigate(
+                `/skills/${skillId}?from=${from}&to=${v}&allowRollback=${isRollback}`
+              )
             }
           />
         </div>
 
         <button
           onClick={() => navigate(`/skills/${skillId}`)}
-          className="hover:text-(--glitch-green) hover:cursor-pointer"
+          className="btn-neutral"
         >
           exit diff
         </button>
+
+        {isRollback && (
+          <button
+            onClick={() => setShowRollbackConfirm(true)}
+            className="btn-yellow-tool"
+          >
+            rollback to selected version
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -162,6 +190,18 @@ export default function SkillDiffViewer({
           ))
         )}
       </div>
+      {showRollbackConfirm && (
+        <RollbackConfirmationModal
+          skillId={skillId}
+          fromVersion={from}
+          toVersion={to}
+          setShowRollbackConfirm={setShowRollbackConfirm}
+          onError={onError}
+          onSuccess={() => {
+            setReloadKey((k) => k + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ interface Props {
   value: number;
   versions: SkillVersionT[];
   onChange: (v: number) => void;
+  disable?: number;
 }
 
 export default function VersionsCustomSelect({
@@ -13,6 +14,7 @@ export default function VersionsCustomSelect({
   value,
   versions,
   onChange,
+  disable,
 }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -75,13 +77,15 @@ export default function VersionsCustomSelect({
                   onChange(v.versionNumber);
                   setOpen(false);
                 }}
-                disabled={active}
+                disabled={active || v.versionNumber === disable}
                 className={`
                   w-full flex justify-between px-3 py-1.5
                   text-left font-mono text-xs
                   ${
                     active
                       ? "text-(--glitch-green) bg-(--glitch-green-highlight) cursor-default"
+                      : v.versionNumber === disable
+                      ? "text-zinc-600 cursor-default"
                       : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 hover:cursor-pointer"
                   }
                 `}

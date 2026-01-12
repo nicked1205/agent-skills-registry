@@ -49,20 +49,13 @@ export default function MarkdownViewer({ skill, onError }: Props) {
         <div className="flex gap-3">
           <button
             onClick={handleCopy}
-            className={`${
-              copied
-                ? "cursor-default"
-                : "hover:cursor-pointer hover:text-(--glitch-green)"
-            }`}
+            className={`${copied ? "cursor-default" : "btn-glitch-green-tool"}`}
             disabled={copied}
           >
             {copied ? "copied" : "copy"}
           </button>
 
-          <button
-            onClick={handleDownload}
-            className="hover:text-(--glitch-green) hover:cursor-pointer"
-          >
+          <button onClick={handleDownload} className="btn-glitch-green-tool">
             download
           </button>
         </div>

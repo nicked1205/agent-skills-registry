@@ -175,3 +175,19 @@ export async function fetchSkillDiff(
 
   return res.json();
 }
+
+export async function rollbackSkill(skillId: number, toVersionNumber: number) {
+  const res = await apiFetch(
+    `/skills/${skillId}/rollback?to=${toVersionNumber}`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Failed to rollback skill");
+  }
+
+  return res.json();
+}

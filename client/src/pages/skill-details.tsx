@@ -33,6 +33,7 @@ export default function SkillDetails() {
   const [tags, setTags] = useState<TagT[]>([]);
   const [versions, setVersions] = useState<SkillVersionT[]>([]);
   const [systemError, setSystemError] = useState<ErrorT | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -45,8 +46,10 @@ export default function SkillDetails() {
   const params = new URLSearchParams(location.search);
   const fromParam = params.get("from");
   const toParam = params.get("to");
+  const rollbackParam = params.get("allowRollback");
   const from = fromParam ? Number(fromParam) : null;
   const to = toParam ? Number(toParam) : null;
+  const isRollback = rollbackParam === "true";
   const isDiffMode = from !== null && to !== null;
 
   const isOwner = username === skill?.ownerUsername;
@@ -102,7 +105,7 @@ export default function SkillDetails() {
     }
 
     loadSkillDetails();
-  }, [id]);
+  }, [id, reloadKey]);
 
   if (loading) {
     return <LoadingOverlay />;
@@ -153,6 +156,9 @@ export default function SkillDetails() {
                 to={to}
                 onError={(err) => setSystemError(err)}
                 versions={versions}
+                isRollback={isRollback}
+                reloadKey={reloadKey}
+                setReloadKey={setReloadKey}
               />
             ) : (
               <MarkdownViewer

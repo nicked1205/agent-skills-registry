@@ -46,7 +46,7 @@ export default function DeleteConfirmationModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-300 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
+        className="w-full max-w-md border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-300"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
@@ -87,7 +87,7 @@ export default function DeleteConfirmationModal({
           <button
             onClick={handleDeleteSkill}
             disabled={deleting}
-            className="text-red-400 hover:text-red-300 disabled:opacity-50 hover:cursor-pointer"
+            className="btn-destructive-action-confirm disabled:opacity-50"
           >
             {deleting ? "deleting…" : "confirm delete"}
           </button>

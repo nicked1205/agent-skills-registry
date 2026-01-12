@@ -33,10 +33,6 @@ export default function SkillDetailsHeader({
   const isPublicView = !isOwner && skill?.isPublic;
   const isCloned = skill?.isCloned;
 
-  console.log(isPublicView);
-  console.log(isCloned);
-  console.log(isOwner);
-
   const navigate = useNavigate();
 
   // fetch versions whenever skill changes
@@ -112,7 +108,7 @@ export default function SkillDetailsHeader({
       {/* Back */}
       <button
         onClick={() => navigate(`/dashboard${fromDashboardState}`)}
-        className="text-xs text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
+        className="text-xs btn-neutral"
       >
         ← dashboard
       </button>
@@ -120,10 +116,7 @@ export default function SkillDetailsHeader({
       {/* Actions */}
       <div className="flex items-center gap-4 text-xs text-zinc-400">
         {isPublicView && (
-          <button
-            onClick={handleCloneSkill}
-            className="hover:text-zinc-200 hover:cursor-pointer"
-          >
+          <button onClick={handleCloneSkill} className="btn-yellow-tool">
             clone
           </button>
         )}
@@ -133,7 +126,7 @@ export default function SkillDetailsHeader({
             {!isCloned && (
               <button
                 onClick={handleToggleVisibility}
-                className="hover:text-(--glitch-green) hover:cursor-pointer"
+                className="btn-glitch-green-tool"
               >
                 {skill?.isPublic ? "set private" : "set public"}
               </button>
@@ -149,7 +142,7 @@ export default function SkillDetailsHeader({
                     versions={versions}
                     onChange={(v) =>
                       navigate(
-                        `/skills/${skill.id}?from=${v}&to=${skill.latestVersion}`
+                        `/skills/${skill.id}?from=${v}&to=${skill.latestVersion}&allowRollback=false`
                       )
                     }
                   />
@@ -161,12 +154,25 @@ export default function SkillDetailsHeader({
                     navigate(
                       `/skills/${skill.id}?from=${skill.latestVersion - 1}&to=${
                         skill.latestVersion
-                      }`
+                      }&allowRollback=false`
                     )
                   }
                   className="btn-neutral"
                 >
                   diff
+                </button>
+
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/skills/${skill.id}?from=${skill.latestVersion}&to=${
+                        skill.latestVersion - 1
+                      }&allowRollback=true`
+                    )
+                  }
+                  className="btn-yellow-tool"
+                >
+                  rollback
                 </button>
               </>
             )}
@@ -174,7 +180,7 @@ export default function SkillDetailsHeader({
             {/* Edit */}
             <button
               onClick={() => navigate(`/skills/${skill.id}/edit`)}
-              className="btn-neutral"
+              className="btn-yellow-tool"
             >
               edit
             </button>
@@ -182,7 +188,7 @@ export default function SkillDetailsHeader({
             {/* Delete */}
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="hover:text-red-400 hover:cursor-pointer"
+              className="btn-red-tool"
             >
               delete
             </button>

@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
-import SkillDetails from "./pages/skill_details";
+import SkillDetails from "./pages/skill-details";
 import SkillEdit from "./pages/skill-edit";
 import ProtectedRoute from "./components/ProtectedRoute";
 

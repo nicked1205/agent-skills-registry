@@ -109,7 +109,7 @@ export default function SkillEdit() {
           className={`
             ${
               hasChanges
-                ? "text-(--glitch-green) hover:text-(--glitch-green) hover:cursor-pointer"
+                ? "btn-edit-action-confirm"
                 : "text-zinc-600 hover:cursor-default"
             }
             disabled:opacity-50
