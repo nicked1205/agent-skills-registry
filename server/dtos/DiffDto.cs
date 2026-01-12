@@ -4,7 +4,13 @@ public record DiffLineDto(
     string Type,
     string Content,
     int? OldLineNumber,
-    int? NewLineNumber
+    int? NewLineNumber,
+    List<DiffWordDto>? Words
+);
+
+public record DiffWordDto(
+    string Type,
+    string Content
 );
 
 public record VersionsDiffDto(

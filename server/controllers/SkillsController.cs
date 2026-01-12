@@ -609,12 +609,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         var dto = new VersionsDiffDto(
             from,
             to,
-            diff.Select(d => new DiffLineDto(
-                d.type,
-                d.content,
-                d.oldLine,
-                d.newLine
-            )).ToList()
+            diff
         );
 
         return Ok(dto);
