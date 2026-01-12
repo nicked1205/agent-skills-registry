@@ -614,4 +614,67 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
         return Ok(dto);
     }
+
+    // rollback a skill to a previous version by creating a NEW version (no history mutation)
+[HttpPost("{id:int}/rollback")]
+public async Task<IActionResult> RollbackSkill(
+    int id,
+    [FromQuery] int to
+) {
+    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    if (to <= 0) return BadRequest("Invalid target version number");
+
+    // load skill + versions
+    var skill = await _db.Skills
+        .Include(s => s.Versions)
+        .FirstOrDefaultAsync(s => s.Id == id);
+
+    if (skill == null) return NotFound("Cannot find skill");
+
+    if (skill.OwnerId != userId) return Forbid("You do not have permission to rollback this skill");
+
+    // find the version we want to roll back to
+    var target = skill.Versions.FirstOrDefault(v => v.VersionNumber == to);
+    if (target == null) return BadRequest("Version does not exist");
+
+    // (Optional) if already at that content, still allow rollback to create a new version for auditability.
+    // If you want to block no-op rollbacks, you can compare latestVersion.Content == target.Content and return 400.
+
+    // parse frontmatter from target content (keeps skill.Name/Description consistent with your versioning rules)
+    SkillFrontmatter parsed;
+    try {
+        parsed = FrontmatterParser.Parse(target.Content);
+    }
+    catch (Exception ex) {
+        return BadRequest(ex.Message);
+    }
+
+    // compute next version number
+    var nextVersionNumber = skill.Versions.Count != 0
+        ? skill.Versions.Max(v => v.VersionNumber) + 1
+        : 1;
+
+    // create new version with copied content
+    var newVersion = new SkillVersion {
+        SkillId = skill.Id,
+        VersionNumber = nextVersionNumber,
+        Content = target.Content,
+        CreatedAt = DateTimeOffset.UtcNow
+    };
+
+    // update skill metadata + updated time
+    skill.Name = parsed.Name;
+    skill.Description = parsed.Description;
+    skill.UpdatedAt = DateTimeOffset.UtcNow;
+
+    _db.SkillVersions.Add(newVersion);
+    await _db.SaveChangesAsync();
+
+    return Ok(new SkillVersionDto(
+        newVersion.VersionNumber,
+        newVersion.CreatedAt
+    ));
+}
+
 }
