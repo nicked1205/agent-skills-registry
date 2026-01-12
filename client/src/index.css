@@ -38,10 +38,14 @@
 @layer base {
   :root {
     --glitch-green: rgb(74, 246, 38);
-    --glitch-green-bg: rgb(74 246 38/ 0.2);
-    --glitch-green-component-bg: rgb(74 246 38/ 0.1);
-    --glitch-green-container-bg: rgb(74 246 38/ 0.03);
-    --glitch-green-highlight: rgba(74, 246, 38, 0.06);
+    --glitch-green-bg: rgba(74, 246, 38, 0.2);
+    --glitch-green-component-bg: rgba(74, 246, 38, 0.1);
+    --glitch-green-container-bg: rgba(74, 246, 38, 0.03);
+    --glitch-green-highlight: rgba(74, 246, 38, 0.1);
+    --red-highlight: rgba(239, 68, 68, 0.1);
+    --glitch-green-word-highlight: rgba(74, 246, 38, 0.3);
+    --red-word-highlight: rgba(239, 68, 68, 0.3);
+    --neutral-highlight: rgba(99, 102, 241, 0.06);
   }
 
   html {

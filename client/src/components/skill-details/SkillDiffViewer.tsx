@@ -55,6 +55,40 @@ export default function SkillDiffViewer({
     };
   }, [skillId, from, to, onError]);
 
+  function renderLineContent(line: VersionsDiffT["lines"][number]) {
+    if (line.type !== "modify" || !line.words) {
+      return line.content;
+    }
+
+    return line.words.map((word, i) => {
+      const base = "px-0.5 rounded-sm";
+
+      if (word.type === "add") {
+        return (
+          <span
+            key={i}
+            className={`${base} bg-(--glitch-green-word-highlight) text-zinc-100`}
+          >
+            {word.content}{" "}
+          </span>
+        );
+      }
+
+      if (word.type === "remove") {
+        return (
+          <span
+            key={i}
+            className={`${base} bg-(--red-word-highlight) text-zinc-100 line-through`}
+          >
+            {word.content}{" "}
+          </span>
+        );
+      }
+
+      return <span key={i}>{word.content} </span>;
+    });
+  }
+
   return (
     <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
       {/* Toolbar */}
@@ -97,9 +131,11 @@ export default function SkillDiffViewer({
               key={i}
               className={`flex px-3 py-0.5 ${
                 line.type === "add"
-                  ? "bg-[rgba(74,246,38,0.06)] text-zinc-200"
+                  ? "bg-(--glitch-green-highlight) text-zinc-200"
                   : line.type === "remove"
-                  ? "bg-[rgba(239,68,68,0.08)] text-zinc-200"
+                  ? "bg-(--red-highlight) text-zinc-200"
+                  : line.type === "modify"
+                  ? "bg-[rgba(99,102,241,0.06)] text-zinc-200"
                   : "text-zinc-400"
               }`}
             >
@@ -117,8 +153,10 @@ export default function SkillDiffViewer({
                   ? "+ "
                   : line.type === "remove"
                   ? "- "
+                  : line.type === "modify"
+                  ? "~ "
                   : "  "}
-                {line.content}
+                {renderLineContent(line)}
               </span>
             </div>
           ))

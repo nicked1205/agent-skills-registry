@@ -3,9 +3,10 @@ using server.dtos;
 namespace server.services;
 
 public static class DiffCheckerService {
+    const double WORD_DIFF_THRESHOLD = 0.2;
     public static List<DiffLineDto> DiffLines(string oldText, string newText) {
-        var oldLines = oldText.Split('\n');
-        var newLines = newText.Split('\n');
+        var oldLines = oldText.Replace("\r\n", "\n").Split('\n');
+        var newLines = newText.Replace("\r\n", "\n").Split('\n');
 
         int m = oldLines.Length;
         int n = newLines.Length;
@@ -29,6 +30,40 @@ public static class DiffCheckerService {
                     newLineNo++, 
                     null));
                 oi++; ni++;
+            } else if (lcs[oi + 1, ni + 1] >= lcs[oi + 1, ni] &&
+                lcs[oi + 1, ni + 1] >= lcs[oi, ni + 1]) {
+                var words = DiffWords(oldLines[oi], newLines[ni]);
+
+                int changed = words.Count(w => w.Type != "same");
+                int total = words.Count;
+
+                bool tooDifferent = total == 0 || changed > total * WORD_DIFF_THRESHOLD; // when number of changed words exceeds threshold, it is practically a full line change
+
+                if (tooDifferent) {
+                    result.Add(new DiffLineDto(
+                        "remove",
+                        oldLines[oi],
+                        oldLineNo++,
+                        null,
+                        null
+                    ));
+                    result.Add(new DiffLineDto(
+                        "add",
+                        newLines[ni],
+                        null,
+                        newLineNo++,
+                        null
+                    ));
+                } else {
+                    result.Add(new DiffLineDto(
+                        "modify",
+                        newLines[ni],
+                        oldLineNo++,
+                        newLineNo++,
+                        words
+                    ));
+                }
+                oi++; ni++;
             } else if (lcs[oi + 1, ni] >= lcs[oi, ni + 1]) {
                 result.Add(new DiffLineDto(
                     "remove", 
@@ -37,19 +72,6 @@ public static class DiffCheckerService {
                     null, 
                     null));
                 oi++;
-            } else if (lcs[oi + 1, ni + 1] >= lcs[oi + 1, ni] &&
-                lcs[oi + 1, ni + 1] >= lcs[oi, ni + 1]) {
-                var words = DiffWords(oldLines[oi], newLines[ni]);
-
-                result.Add(new DiffLineDto(
-                    "modify",
-                    newLines[ni],
-                    oldLineNo++,
-                    newLineNo++,
-                    words
-                ));
-
-                oi++; ni++;
             } else {
                 result.Add(new DiffLineDto(
                     "add", 
