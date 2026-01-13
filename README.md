@@ -23,7 +23,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🧩 Features
+## Features
 
 - User authentication (username & password)
 - Upload Markdown skill files (private by default)
@@ -53,7 +53,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
