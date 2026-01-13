@@ -1,15 +1,15 @@
 # agent-skills-registy
 
-A full-stack web application for uploading, managing, versioning, and sharing **AI agent skill files** written in Markdown.
+A full-stack web application for uploading, managing, versioning, and sharing AI agent skill files written in Markdown.
 
 ---
 
 ## Overview
 
-AI agents often rely on **markdown-based skill files** that include:
+AI agents often rely on markdown skill files that include:
 
-- **Frontmatter metadata** (name, description, allowed tools)
-- **Instructional content** for task execution
+- Frontmatter metadata (name, description, allowed tools)
+- Instructional content for task execution
 
 The **Agent Skills Registry** provides a centralized place to:
 
@@ -19,7 +19,7 @@ The **Agent Skills Registry** provides a centralized place to:
 - Share skills publicly or keep them private
 - Explore, clone, and download public skills from other users
 
-The focus of this project is **clean system design, correctness, and extensibility**, rather than production hardening.
+The focus of this project is clean system design, correctness, and extensibility.
 
 ---
 
@@ -69,14 +69,14 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ### Database
 
-- SQLite (local, relational, no secrets required)
+- SQLite
 
 ---
 
 ## Security
 
-- Passwords hashed using **PBKDF2 with per-user salts**
-- No plaintext password storage
+- Passwords hashed using PBKDF2 with per-user salts
+- Reauthentication on token expiration and token refreshing planned
 - Protected routes secured via JWT authentication
 - Thorough brainstorming and testing to prevent DOS attacks
 
@@ -99,7 +99,7 @@ git clone https://github.com/nicked1205/agent-skills-registry.git
 cd agent-skills-registry
 ```
 
-### 2. Clone the Repository
+### 2. Run the backend
 
 ```bash
 cd server
@@ -109,7 +109,7 @@ dotnet run
 
 Backend will be available at port 5151, navigate to '/swagger' for backend UI.
 
-### 3. Clone the Repository
+### 3. Run the frontend
 
 ```bash
 cd client
@@ -125,17 +125,17 @@ Frontend will be available at port 5173
 
 - API tested through realistic user workflows
 - UI tested against edge cases (long names, tag limits, version rollback)
-- Any validations are synced between client-side and server-side
+- Any validations are done in both client-side and server-side
 - Code structured for maintainability and future extensibility
 
 The project includes a focused testing document describing how input-driven edge cases and UI behavior were validated, including:
 
-- Extreme and malformed user inputs (long names, gibberish text, tag limits)
+- Extreme and malformed user inputs (long names, gibberish, tag limits)
 - Layout and responsiveness under constrained viewports
 - Scroll containment and overflow behavior
 - Versioning, diff rendering, and download correctness
 
-📄 **Read more:** [TESTING.md](./TESTING.md)
+**Read more:** [TESTING.md](./TESTING.md)
 
 ---
 
@@ -158,9 +158,9 @@ This project includes a detailed design justification document covering:
 - Architectural choices (SPA, stateless backend)
 - Authentication and JWT design
 - Security decisions and trade-offs
-- Versioning and data modeling rationale
 - API design and DTO usage
 - UX and responsiveness constraints
 - Framework and dependency selection
+  and more...
 
-📄 **Read the full document:** [DESIGN.md](./DESIGN.md)
+**Read the full document:** [DESIGN.md](./DESIGN.md)

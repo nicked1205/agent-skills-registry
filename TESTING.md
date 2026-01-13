@@ -1,8 +1,8 @@
 # Testing & Validation Notes
 
-This document describes how the Agent Skills Registry was tested, with a focus on **input-driven behavior**, **UI robustness**, and **edge cases** that affect usability, layout, and correctness.
+This document describes how the Agent Skills Registry was tested, with a focus on input-driven behavior, UI adaptability, and edge cases that affect usability, layout, and correctness.
 
-Rather than formal unit or integration test reports, this document captures the practical validation performed to ensure the system behaves predictably under real-world and adversarial input conditions.
+Rather than formal unit or integration test reports, this document captures the practical validation performed to ensure the system behaves predictably under real-world (unintentional or intentional input mistakes or trolling) input conditions.
 
 ---
 
@@ -10,12 +10,11 @@ Rather than formal unit or integration test reports, this document captures the 
 
 The primary goal of testing was to validate:
 
-- How **user-controlled input** affects UI layout and interaction
-- Whether **constraints and limits** are enforced consistently
+- How user-controlled input affects UI layout and interaction
+- Whether constraints and limits are enforced consistently
 - That the application remains usable under extreme or malformed input
-- That error handling and feedback are clear and non-destructive
 
-Testing emphasized **product behavior** and **user experience**, not just code correctness.
+Testing emphasized product behavior and user experience, not just code correctness.
 
 ---
 
@@ -26,12 +25,11 @@ Testing emphasized **product behavior** and **user experience**, not just code c
 Tested scenarios include:
 
 - Maximum-length usernames
-- Usernames with no spaces
 
 Validated behavior:
 
 - Usernames do not overflow layout containers
-- Truncation and Breakall behave consistently where applicable
+- Truncation and wrap behave consistently
 - No layout breakage
 - Identity remains readable and distinguishable
 
@@ -46,13 +44,15 @@ Tested:
 - Maximum-length names
 - Long unbroken strings (gibberish)
 - Names with mixed casing and punctuation
+- Empty name
 
 Validated:
 
 - Names truncate in list and row views
-- Full names remain accessible in detailed views
-- No horizontal overflow or layout collapse
+- Full names remain accessible in detailed views, but truncates for smaller viewports
+- No layout breakage
 - Search and filtering remain functional
+- Errors accordingly
 
 ---
 
@@ -68,10 +68,12 @@ Tested:
 
 Validated:
 
-- Description text wraps correctly
+- Description text wraps or truncates correctly
+- Full description remain accessible in detailed views, but truncates for smaller viewports
 - No layout breakage
 - UI remains readable and stable across layouts
-- Ill-formatted description parts are discarded (only parse the format of what shown in the brief)
+- Ill-formatted description parts are discarded (based on the format in brief)
+- Errors accordingly
 
 ---
 
@@ -88,8 +90,8 @@ Tested:
 Validated:
 
 - Invalid files are rejected early with clear errors
+- Invalid sections are ignored
 - Valid files are parsed correctly
-- Metadata extraction is consistent
 - File size and structure do not affect UI stability
 
 ---
@@ -104,7 +106,6 @@ Tested:
 
 Validated:
 
-- Tags truncate correctly
 - Excessively long tags do not break layout
 - Tag text remains readable or inferable
 
@@ -118,8 +119,8 @@ Tested:
 
 Validated:
 
-- Tag limits are enforced at the UI level
-- Clear feedback is provided when limits are reached
+- Tag limits are enforced at both the UI and server level
+- Errors accordingly
 - Layout remains stable with varying tag counts
 
 ---
@@ -130,9 +131,9 @@ Validated:
 
 Tested:
 
-- Wide desktop screens
-- Narrow viewports
-- Forced resizing between breakpoints
+- Wide devices
+- Narrow devices
+- Manual viewport resizing
 
 Validated:
 
@@ -140,6 +141,7 @@ Validated:
 - Card layout is enforced on low-width screens
 - No clipped components
 - Interaction patterns remain consistent and readable
+- Design preserves readability and aesthetics
 
 ---
 
@@ -174,7 +176,6 @@ Validated:
 - Inline diffs appear only for small, localized changes
 - Large edits are rendered as replacements
 - Diff view remains readable
-- No visual noise or misleading highlights
 
 ---
 
@@ -190,7 +191,6 @@ Validated:
 
 - Download count increments only when files are actually served
 - Counts are not affected by UI interactions alone
-- Content-Type headers ensure correct decoding across environments
 
 ---
 
@@ -212,6 +212,6 @@ Validated:
 
 ## Summary
 
-This testing approach focused on **how real user input affects the system**, especially in ways that can break layouts, confuse users, or degrade usability.
+This testing approach focused on how real user input affects the system, especially in ways that can break layouts, confuse users, or degrade usability.
 
-By validating behavior under extreme, malformed, and boundary inputs, the system was tested not only for correctness, but for resilience and clarity in realistic usage scenarios.
+By validating behavior under extreme or malformed inputs, the system was tested not only for correctness, but for aesthetics and clarity in realistic usage scenarios.

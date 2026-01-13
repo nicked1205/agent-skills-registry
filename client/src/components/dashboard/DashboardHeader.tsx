@@ -8,6 +8,11 @@ export default function DashboardHeader({ username }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  function middleTruncate(text: string, start = 12, end = 12) {
+    if (text.length <= start + end + 1) return text;
+    return `${text.slice(0, start)}…${text.slice(-end)}`;
+  }
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -34,9 +39,7 @@ export default function DashboardHeader({ username }: Props) {
           className="flex items-center min-w-0 text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
           title={`${username ?? "unknown"}@local`}
         >
-          <span className="max-w-36 sm:max-w-50 md:max-w-64 truncate">
-            {username ?? "unknown"}
-          </span>
+          <span>{username ? middleTruncate(username) : "unknown"}</span>
           <span className="shrink-0">@local</span>
         </button>
 

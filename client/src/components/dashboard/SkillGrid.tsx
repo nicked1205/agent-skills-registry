@@ -138,7 +138,7 @@ export default function SkillGrid({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mx-3">
             {skills.map((skill) => (
               <div key={skill.id} className="h-44 flex flex-col">
-                <SkillCard skill={skill} username={username} />
+                <SkillCard skill={skill} username={username} view={view} />
               </div>
             ))}
           </div>
@@ -148,7 +148,12 @@ export default function SkillGrid({
         {layout === "row" && !isNarrow && (
           <div className="flex flex-col gap-2 mx-3">
             {skills.map((skill) => (
-              <SkillRow key={skill.id} skill={skill} username={username} />
+              <SkillRow
+                key={skill.id}
+                skill={skill}
+                username={username}
+                view={view}
+              />
             ))}
           </div>
         )}

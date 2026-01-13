@@ -1,14 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import type { SkillCardT } from "../../types";
-import { CloneIcon, DownloadIcon } from "../../icons";
+import { CloneIcon, DownloadIcon, VisibilityIcon } from "../../icons";
 import HudCorners from "../ui/HudCorners";
+import FadeHoriScroll from "../ui/FadeHoriScroll";
 
 interface Props {
   skill: SkillCardT;
   username: string | null;
+  view: "private" | "public";
 }
 
-export default function SkillCard({ skill, username }: Props) {
+export default function SkillCard({ skill, username, view }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -43,21 +45,24 @@ export default function SkillCard({ skill, username }: Props) {
       {/* Description and Tags */}
       <div className="flex flex-col gap-2 mt-2 flex-1">
         {skill.description && (
-          <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
+          <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed wrap-anywhere">
             {skill.description}
           </p>
         )}
 
         {skill.tags && skill.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 max-h-12 overflow-hidden">
-            {skill.tags.map((tag) => (
-              <span
-                key={tag.id}
-                className="max-w-3/10 border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 truncate"
-              >
-                {tag.name}
-              </span>
-            ))}
+          <div className="relative">
+            <FadeHoriScroll className="flex gap-1">
+              {skill.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="shrink-0 border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 max-w-30 truncate"
+                  title={tag.name}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </FadeHoriScroll>
           </div>
         )}
       </div>
@@ -67,6 +72,12 @@ export default function SkillCard({ skill, username }: Props) {
         <div className="flex items-center gap-3">
           <span>v{skill.latestVersion}</span>
           <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
+          {view === "private" && (
+            <VisibilityIcon
+              isPublic={skill.isPublic}
+              className="h-3.5 w-3.5 text-zinc-500 shrink-0"
+            />
+          )}
         </div>
 
         {!skill.isCloned && (

@@ -1,7 +1,7 @@
 # Design Decisions & Justifications
 
-This document records the architectural, security, API, and UX design decisions made during the development of the Agent Skills Registry.  
-All decisions are documented with their rationale to make trade-offs explicit and the system easier to reason about and evolve.
+This document records the architectural, security, API, and UX design decisions made during the development of agent-skills-registry.  
+All decisions are documented with their rationale to make trade-offs clear and the system easier to reason and evolve.
 
 ---
 
@@ -14,9 +14,10 @@ All decisions are documented with their rationale to make trade-offs explicit an
 
 ### Justification
 
-- Clear separation of concerns
+- Required in the brief
+- Clear sepaeration of concerns
 - Token-based authentication fits naturally
-- Easier to scale and reason about
+- Easier to scale and reason
 - Industry-standard for modern web applications
 
 ---
@@ -47,17 +48,22 @@ All decisions are documented with their rationale to make trade-offs explicit an
 - Credentials can be revalidated
 - Permissions can change over time
 
-#### 3. Allows safe logout patterns
+#### 3. Token-expiration detection
 
-- Even though the server does not explicitly revoke tokens
-- Short expiry limits how long a logged-out token remains valid
+- Automatically detect authorization error in api calls
+- Redirects to login
 
-JWTs are stateless in the sense that the server does not store session data, but they still include an expiration time to bound their validity.  
-The `exp` claim allows the server to reject old or compromised tokens without maintaining server-side state.
+#### 4. Strategy for URL pasting and Backpaging
 
-### Client-side JWT expiry handling
+- Protected component wrapper prevents access to a page not having a valid token
 
-Because authentication is stateless, the frontend monitors API responses and redirects users to the login screen when a token expires or becomes invalid. This preserves UX consistency without introducing server-side session state.
+#### 5. Planning for the future
+
+- Token expires way quicker
+- Minimizes damage if token is stolen
+- `/refresh` endpoint to refresh token for user without having to reauthenticate
+
+JWTs are stateless in the sense that the server does not store session data, but they still include an expiration time to bound their validity.
 
 ---
 
@@ -70,8 +76,7 @@ Because authentication is stateless, the frontend monitors API responses and red
 ### Justification
 
 - Prevents token reuse across different services
-- Clearly defines trust boundaries
-- Production-grade security practice
+- Confirms that the token comes from a trusted source (issuer) and is meant for a specific service (audience)
 
 ---
 
@@ -86,17 +91,10 @@ Include both:
 
 ### Rationale
 
-- `ClaimTypes.Name` maps directly to `User.Identity.Name` and is appropriate for UI display and `/me` endpoints
-- `ClaimTypes.NameIdentifier` represents a stable, system-level user ID
+- `ClaimTypes.Name` maps directly to `User.Identity.Name` and is appropriate for frontend and `/me` endpoints
+- `ClaimTypes.NameIdentifier` represents a stable, backend user ID
 - Separating these avoids relying on usernames as identifiers
 - Aligns with ASP.NET Core authentication conventions
-
-Additional considerations:
-
-- Usernames are user-facing and mutable
-- Identifiers should be immutable and system-facing
-- ASP.NET Core does not automatically map `sub` or `unique_name` to `User.Identity.Name`
-- Using `ClaimTypes.Name` avoids custom claim mapping
 
 ---
 
@@ -127,27 +125,27 @@ Additional considerations:
 
 Storing passwords securely is a fundamental security requirement. Even in the event of a database compromise, password hashes should be computationally expensive to reverse.
 
-`Rfc2898DeriveBytes` implements **PBKDF2**, a purpose-built password hashing algorithm designed to resist brute-force and dictionary attacks. It incorporates:
+`Rfc2898DeriveBytes` implements PBKDF2, a password hashing algorithm designed to resist brute-force and dictionary attacks, with:
 
-- **Per-user salts**, which prevent rainbow table attacks
-- **Configurable iteration counts**, which deliberately slow down hash computation
+- Per-user salts, which prevent rainbow table attacks
+- Configurable iteration counts, slowing down hash computation
 - A design that is resilient to GPU and ASIC-based attacks compared to fast hashes
 
 ### Why PBKDF2 instead of SHA-256
 
-Although SHA-256 is a cryptographically secure hash function, it is **not suitable for password storage**:
+Although SHA-256 is a cryptographically secure hash function, it is not suitable for password storage:
 
-- SHA-256 is designed to be **fast**, which makes brute-force attacks cheaper and more scalable
+- SHA-256 is fast, which makes brute-force attacks cheaper and more scalable
 - Fast hashes allow attackers to test millions or billions of guesses per second
 - Salting alone does not solve this problem if the hash function is fast
 
 PBKDF2, by contrast:
 
-- Is intentionally **slow**
+- Is slow
 - Allows the computational cost to be increased over time
 - Makes large-scale offline attacks significantly more expensive
 
-Using `Rfc2898DeriveBytes` aligns with industry best practices for password storage and follows the security guidance recommended for .NET applications.
+Using `Rfc2898DeriveBytes` aligns with industry best practices for password storage and is usually recommended for .NET applications.
 
 ---
 
@@ -173,15 +171,15 @@ Using `Rfc2898DeriveBytes` aligns with industry best practices for password stor
 
 Return explicit HTTP status codes:
 
-- `401 Unauthorized` — authentication failures
-- `400 Bad Request` — invalid skill files
-- `403 Forbidden` — authenticated but not owner
-- `404 Not Found` — resource does not exist
+- `401 Unauthorized` - authentication failures
+- `400 Bad Request` - invalid skill files
+- `403 Forbidden` - authenticated but not owner
+- `404 Not Found` - resource does not exist
 
 ### Justification
 
-- Clear separation of concerns
-- Improved debuggability
+- Clear separation of errors
+- Improved debug efficiency
 - Better UX and API clarity
 
 ---
@@ -196,12 +194,11 @@ Return explicit HTTP status codes:
 
 - Human-readable format
 - Easy to version
-- Diff-friendly
-- Aligns with developer workflows
+- Easy to diff
 
 ---
 
-## 10. CORS Configuration
+## 10. CORS(Cross-Origin Resource Sharing) Configuration
 
 ### Decision
 
@@ -209,8 +206,9 @@ Return explicit HTTP status codes:
 
 ### Justification
 
-- Prevents unauthorized cross-origin access
-- Secure-by-default configuration
+- Allow web applications from different origins to request and share resources, bypassing the browser's default security restriction (Same-Origin Policy)
+- Prevents unauthorized cross-origin access to APIs or data
+  -> Control who is doing what to data and APIs
 
 ---
 
@@ -227,14 +225,15 @@ Return explicit HTTP status codes:
 - Tooling consistency
 - Suitable for backend services and maintained projects
 - Avoids breaking changes from preview or STS releases
+- Easily updatable if needed
 
 ### Why not .NET 9 or preview releases
 
 - Not LTS
 - APIs change more frequently
 - Higher dependency churn
-- Less predictable in evaluation environments
-- Reliability prioritized over novelty
+- Less predictable in building a product as a challenge situation
+- Reliability prioritized
 
 ### Dependency pinning to 8.0.4
 
@@ -252,7 +251,7 @@ Return explicit HTTP status codes:
   - Security-sensitive middleware
   - EF Core migrations
 
-Patch auto-upgrades were avoided to prioritize predictability. Upgrading later within .NET 8.x is straightforward once stability is confirmed.
+Patch auto-upgrades were avoided to prioritize predictability. Upgrading later is straightforward once stability (LTS) is confirmed.
 
 ---
 
@@ -266,20 +265,8 @@ A DTO is a simple object used to move data across application boundaries without
 
 - Controls what data leaves the API
 - Prevents over-fetching
-- Avoids coupling clients to EF Core entities
+- Avoids exposing EF Core entities info to client
 - Allows independent evolution of database schema and API contract
-
-### Why DTOs were especially justified here
-
-- Skill entity contains navigation properties and internal IDs
-- Details view requires derived data (latest version content)
-- API must enforce ownership and visibility rules
-- Returning entities directly risks over-exposure
-
-### Why DTOs were not used everywhere
-
-- Simple list endpoints use lightweight projections
-- DTOs introduced when payloads become richer, reusable, or tied to authorization and versioning
 
 ---
 
@@ -292,44 +279,55 @@ A DTO is a simple object used to move data across application boundaries without
 ### Justification
 
 - Visibility toggling is a partial update
-- Communicates intent more accurately
+- Communicates partial intent more accurately
 - Avoids full resource replacement semantics
 
 ---
 
 ## 14. Metadata Constraints
 
-- Skill name capped at **100 characters**
-- Description capped at **500 characters**
+- Skill name capped at 100 characters
+- Description capped at 500 characters
 
 These limits ensure:
 
 - Concise identifiers suitable for UI and search
 - Descriptions remain summaries, not documentation
 - Metadata remains lightweight and consistent
+- Prevents infinitely long skill name or description in database -> performance and logical issue
+
+These constraints can be modified easily in both frontend and backend.
 
 ---
 
 ## 15. Tag Design
 
-### Decisions
+### Backend
 
 - Tags are owned by a skill
 - No standalone `TagController`
 - Tag endpoints are nested under skills
+- Client-side code api call functions are still separated by tag and skill for clarity
+
+### Frontend
+
+- Tag displays are horizontally scrollable
+- No scrollbar but with fade effects to signify scrollability
 
 ### Justification
 
 - Tags have no meaning outside their parent skill
 - Ownership and permission model remains explicit
 - Simpler, safer API aligned with UI usage
+- Supports however much tags are allowed per skill
+- Aesthetically-pleasing fade effect > layout-breaking horizontal scrollbar
 
 ### Constraints
 
-- Maximum 5 tags per skill
+- Maximum 20 tags per skill (more than sufficient to support organization and filtering)
 - Maximum 16 characters per tag
 
-These limits preserve readability and filtering quality in dense layouts.
+These constraints preserve readability, and logically aligns with tag-filtering, and can be modified easily on client's request in both frontend and backend.
 
 ---
 
@@ -341,13 +339,13 @@ These limits preserve readability and filtering quality in dense layouts.
 
 ### Justification
 
-- Prevents accidental reassociation
+- Prevents accidental reassociation (new pointer pointing to deleted entries situations)
 - Preserves referential integrity
-- Avoids ambiguity in logs, caches, and audit history
+- Avoids confusion in logs, caches, and audit history
 
 ---
 
-## 17. Skill Cloning Semantics
+## 17. Skill Cloning Procedure
 
 ### Decisions
 
@@ -358,9 +356,9 @@ These limits preserve readability and filtering quality in dense layouts.
 ### Justification
 
 - Prevents public feed spam
-- Clones are independent by design
+- Clones are seen as a new fork by design
 - Versions represent author history, not transferable state
-- Attribution preserved without hard dependencies
+- Clarify owenership
 
 ---
 
@@ -369,12 +367,14 @@ These limits preserve readability and filtering quality in dense layouts.
 ### Decision
 
 - Downloads are counted on the backend when the file is served
+- Downloads only counted when another user download your skill and vice versa
 
 ### Justification
 
 - Reflects real downloads, not button clicks
 - Avoids reliance on client-side behavior
-- Keeps analytics accurate and extensible
+- Keeps analytics accurate and evolvable
+- Downloads can be seen as user's file popularity
 
 ### Content-Type Accuracy
 
@@ -388,14 +388,14 @@ correct decoding across browsers and editors.
 ### Decision
 
 - Conservative word-level diff threshold (20%)
-- Inline diffs only for small, localized changes
+- Inline diffs only for small changes
 - Large edits treated as replacements
 
 ### Justification
 
 - Avoids visual noise
 - Prioritizes readability over maximal granularity
-- Mirrors established tools such as GitHub
+- Mirrors famous tools such as GitHub
 
 ---
 
@@ -409,8 +409,10 @@ correct decoding across browsers and editors.
 ### Justification
 
 - Predictable, bounded data access
-- Improved perceived performance
-- Scalable backend behavior
+- Improve performance in the future (1M+ public skill entries)
+- Can easily convert to pagination
+- Constants can be modified easily (amount per page)
+- Pagesize limit at the API level reduces the risk of denial-of-service attacks caused by large or repeated data requests
 
 ---
 
@@ -419,9 +421,9 @@ correct decoding across browsers and editors.
 SQLite does not support ordering by `DateTimeOffset`, so:
 
 - A normalized Unix timestamp is stored for ordering and pagination
-- `DateTimeOffset` is retained for correct time semantics and display
+- `DateTimeOffset` is retained for correct time display
 
-This ensures stable pagination without relying on client-side ordering.
+This ensure to delegates ordering to backend, not frontend
 
 ---
 
@@ -429,17 +431,13 @@ This ensures stable pagination without relying on client-side ordering.
 
 ### Decision
 
-- Disable row/table layout on low-width devices
-- Force card layout on narrow viewports
+- Disable row/table toggle and force card layout on low-width devices
 
 ### Rationale
 
-- Row views are column-dependent and scan-optimized
-- Narrow screens break table semantics
-- Capability-based responsiveness ensures interaction patterns remain valid
+- Row views are only suitable for wide screen to have enough space for enough data to be shown
+- Capability-based responsiveness ensure UX
 - Prevents fragile layout hacks and misleading affordances
-
-This mirrors how terminal tools adapt behavior based on available width.
 
 ---
 
@@ -447,9 +445,9 @@ This mirrors how terminal tools adapt behavior based on available width.
 
 API calls are categorized into:
 
-1. **Lifecycle / bootstrap calls** - page load (useEffect with cancelation handling)
-2. **Reactive / derived calls** - state-dependent fetches (useEffect with dependency arrays)
-3. **Event-driven calls** - direct user actions (handleSomeTask)
+1. Lifecycle / bootstrap calls - page load (useEffect with cancelation handling)
+2. Reactive / derived calls - state-dependent fetches (useEffect with dependency arrays)
+3. Event-driven calls - direct user actions (handleSomeTask)
 
 This separation improves reasoning, prevents stale data, and avoids duplicated requests.
 
@@ -457,10 +455,8 @@ This separation improves reasoning, prevents stale data, and avoids duplicated r
 
 ## 24. Error Handling Philosophy
 
-- Authentication failures are centralized
-- Other errors are handled at the call site
-
-This allows each API interaction to define its own error semantics and user-facing messaging while keeping auth handling consistent.
+- Errors are handled at api call site
+  -> Allows each API interaction to define its own error params, easing error displays.
 
 ---
 
@@ -472,9 +468,9 @@ This allows each API interaction to define its own error semantics and user-faci
 
 ### Justification
 
-- Low-risk productivity tool
-- Reduces friction during longer editing sessions
-- Refresh tokens intentionally deferred to keep the auth model simple
+- Product is a low-risk productivity tool
+- Reduces reauthentication during longer editing sessions
+- Refresh tokens are planned to be implemented in the future
 
 ---
 
@@ -489,3 +485,63 @@ This allows each API interaction to define its own error semantics and user-faci
 - Authentication-first, utility-focused application
 - Login page serves as the entry point
 - Focus placed on clear onboarding rather than extra navigation layers
+
+---
+
+## 27. Input Validation
+
+### Decision
+
+- All input validation (username, tagname, password,...) are done in both frontend and backend
+- The frontend enforces constraints for immediate user feedback and UI stability
+- The backend independently enforces the same constraints as the authoritative gatekeeper
+
+### Justification
+
+- Ensures unified input structure
+- Frontend checks can be bypassed through non-UI access paths
+- This layered approach reduces the risk of malformed or unsafe input entering the system
+
+## 28. Row-style layout
+
+### Decision
+
+- Fields with variable-length content, such as version identifiers, are allocated a fixed ch units rather than percentage-based or content-sized widths
+- Elastic metadata regions, such as tags, consume remaining horizontal space using flex with overflow handling.
+
+### Justification
+
+- Prevents visual wiggly column effect when values vary in length (e.g., v3 vs v10000)
+- Balances flexibility with aesthetic
+
+## 29. Handling Pathological Long Strings
+
+### Decision
+
+- Preserve natural word boundaries for normal text
+- Treat extremely long, unbroken strings as pathological input
+- Apply overflow-wrap: anywhere only in contexts where wrapping is acceptable
+- Use truncation in contexts where wrapping would harm layout
+- Truncating username in the middle
+
+### Justification
+
+- Breaking normal words degrades readability and scan-ability across the UI
+- Truncation preserve layout stability
+- Preserves username prefix and suffix meanings
+
+## 30. Frontmatter Parsing Scope
+
+### Decision
+
+- Ignores ill-formatted or unrelated frontmatter lines
+- Supports a restricted frontmatter format consisting of single-line key:value pairs and does not implement full YAML features such as multiline values, block scalars, or nested structures
+
+### Justification
+
+- The challenge specification and provided examples only require simple metadata fields (name, description, allowed-tools) expressed on single lines
+- A constrained parser avoids ambiguous parsing behavior not clarified or requested by the client (the brief)
+- Limiting supported syntax improves robustness and security by minimizing the accepted input surface
+- Ensures deterministic parsing and predictable validation errors
+
+If richer metadata becomes necessary, the parser can be extended or replaced with a corresponding YAML parser without breaking existing files, as the current format is just a simpler YAML parser

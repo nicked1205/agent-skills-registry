@@ -148,7 +148,7 @@ export default function SkillDetails() {
           </div>
         </div>
 
-        <div className="md:h-full flex flex-col flex-1 min-h-0 border border-zinc-800 bg-zinc-950">
+        <div className="md:h-full flex flex-col flex-1 min-h-0 min-w-0 border border-zinc-800 bg-zinc-950">
           {/* Viewers */}
           <div className="flex-1 min-h-0">
             {isDiffMode ? (
@@ -172,7 +172,7 @@ export default function SkillDetails() {
           </div>
 
           {/* Tags */}
-          <div className="relative px-3 py-2 overflow-x-auto">
+          <div className="relative px-3 py-2">
             <SkillTags
               tags={tags}
               setTags={setTags}

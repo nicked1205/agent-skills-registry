@@ -10,12 +10,11 @@ import ErrorModal from "../components/ui/ErrorModal";
 import DashboardControls from "../components/dashboard/DashboardControls";
 import DashboardSearchPanel from "../components/dashboard/DashboardSearchPanel";
 
-type ViewMode = "private" | "public";
-
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialView = (searchParams.get("view") as ViewMode) ?? "private";
+  const initialView =
+    (searchParams.get("view") as "private" | "public") ?? "private";
 
   const initialSearch = searchParams.get("search") ?? "";
 
@@ -23,7 +22,7 @@ export default function Dashboard() {
     ? searchParams.get("tags")!.split(",").filter(Boolean)
     : [];
 
-  const [view, setView] = useState<ViewMode>(initialView); // view mode
+  const [view, setView] = useState<"private" | "public">(initialView); // view mode
   const [reloadKey, setReloadKey] = useState(0); // helps with refetch skill list after update
   const [username, setUsername] = useState<string | null>(null); // current user
 
@@ -59,7 +58,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   // update url when search params are applied and depend on view mode
-  function updateUrl(view: ViewMode, search: string, tags: string[]) {
+  function updateUrl(
+    view: "private" | "public",
+    search: string,
+    tags: string[]
+  ) {
     const params = new URLSearchParams();
 
     params.set("view", view);

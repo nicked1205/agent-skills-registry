@@ -161,7 +161,7 @@ export default function SkillDiffViewer({
           diff?.lines.map((line, i) => (
             <div
               key={i}
-              className={`flex px-3 py-0.5 break-all ${
+              className={`flex px-3 py-0.5 ${
                 line.type === "add"
                   ? "bg-(--glitch-green-highlight) text-zinc-200"
                   : line.type === "remove"
@@ -180,7 +180,7 @@ export default function SkillDiffViewer({
               </span>
 
               {/* Texts */}
-              <span className="whitespace-pre-wrap wrap-break-word">
+              <span className="whitespace-pre-wrap wrap-anywhere">
                 {line.type === "add"
                   ? "+ "
                   : line.type === "remove"

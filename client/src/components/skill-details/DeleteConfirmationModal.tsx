@@ -46,7 +46,7 @@ export default function DeleteConfirmationModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-300"
+        className="w-full max-w-md border border-zinc-800 bg-zinc-950 text-xs text-zinc-300"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
@@ -64,7 +64,8 @@ export default function DeleteConfirmationModal({
           <p>You are about to permanently delete:</p>
 
           <p className="text-red-400">
-            {">"} <span className="text-zinc-100 break-all">{skill.name}</span>
+            {">"}{" "}
+            <span className="text-zinc-100 wrap-anywhere">{skill.name}</span>
           </p>
 
           <p className="text-zinc-500">

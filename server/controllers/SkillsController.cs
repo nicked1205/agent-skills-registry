@@ -413,6 +413,8 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         int id,
         [FromBody] AddTagDto dto
     ) {
+        const int SKILL_MAX_TAGS = 20;
+
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         if (string.IsNullOrWhiteSpace(dto.Tag)) return BadRequest("Tag cannot be empty");
@@ -433,7 +435,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
 
         if (skill.OwnerId != userId) return Forbid("You do not have permission to add a tag to this skill");
 
-        if (skill.SkillTags.Count >= 5) return BadRequest("A skill may have at most 5 tags");
+        if (skill.SkillTags.Count >= SKILL_MAX_TAGS) return BadRequest($"A skill may have at most {SKILL_MAX_TAGS} tags");
 
         // check if tag already exists globally
         var tag = await _db.Tags.FirstOrDefaultAsync(t => t.Name == normalized);

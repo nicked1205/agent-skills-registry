@@ -2,6 +2,7 @@ import { useState } from "react";
 import { addSkillTag, deleteSkillTag } from "../../api/tag";
 import type { ErrorT, SkillDetailsT } from "../../types";
 import type { TagT } from "../../types";
+import FadeHoriScroll from "../ui/FadeHoriScroll";
 
 export interface Props {
   isOwner: boolean;
@@ -11,7 +12,7 @@ export interface Props {
   onError: (err: ErrorT) => void;
 }
 
-const MAX_TAGS = 5;
+const MAX_TAGS = 20;
 
 export default function SkillTags({
   isOwner,
@@ -86,45 +87,50 @@ export default function SkillTags({
 
   return (
     <div className="flex items-center gap-2 text-xs text-zinc-400">
-      <span className="text-zinc-500">tags:</span>
+      <span className="text-zinc-500 shrink-0">tags:</span>
 
-      <div className="flex flex-wrap gap-x-3 gap-y-1 max-h-20 overflow-hidden">
-        {tags.length === 0 && <span className="text-zinc-600">none</span>}
+      <div className="flex-1 min-w-0 pr-4">
+        <FadeHoriScroll className="flex items-center gap-2">
+          {tags.length === 0 && (
+            <span className="text-zinc-600 shrink-0">none</span>
+          )}
 
-        {tags.map((tag) => (
-          <span key={tag.id} className="flex items-center gap-1">
-            <span>{tag.name}</span>
-            {isOwner && (
-              <button
-                onClick={() => handleDeleteTag(tag.id)}
-                className="btn-red-tool text-xs"
-                title="remove tag"
-              >
-                ×
-              </button>
-            )}
-          </span>
-        ))}
+          {tags.map((tag) => (
+            <span key={tag.id} className="flex items-center gap-1 shrink-0">
+              <span className="whitespace-nowrap">{tag.name}</span>
 
-        {isOwner && canAddMore && (
-          <div className="flex gap-2">
-            <span className="text-zinc-600 hidden">add</span>
-            <input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddTag();
-              }}
-              className="w-24 bg-transparent border-b border-zinc-700 focus:border-(--glitch-green-bg) focus:outline-none text-zinc-200 placeholder:text-zinc-700 caret-(--glitch-green)"
-            />
-            <span className="text-zinc-600 select-none">enter↵</span>
-          </div>
-        )}
-
-        {isOwner && !canAddMore && (
-          <span className="text-zinc-600 select-none">max {MAX_TAGS}</span>
-        )}
+              {isOwner && (
+                <button
+                  onClick={() => handleDeleteTag(tag.id)}
+                  className="btn-red-tool text-xs shrink-0"
+                  title="remove tag"
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          ))}
+        </FadeHoriScroll>
       </div>
+      {isOwner && canAddMore && (
+        <div className="flex items-center gap-2 shrink-0">
+          <input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAddTag();
+            }}
+            className="w-12 sm:w-16 md:w-24 bg-transparent border-b border-zinc-700 focus:border-(--glitch-green-bg) focus:outline-none text-zinc-200 placeholder:text-zinc-700 caret-(--glitch-green)"
+          />
+          <span className="text-zinc-600 select-none">enter↵</span>
+        </div>
+      )}
+
+      {isOwner && !canAddMore && (
+        <span className="text-zinc-600 select-none shrink-0">
+          max {MAX_TAGS}
+        </span>
+      )}
     </div>
   );
 }
