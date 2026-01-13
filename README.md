@@ -4,7 +4,7 @@ A full-stack web application for uploading, managing, versioning, and sharing **
 
 ---
 
-## ✨ Overview
+## Overview
 
 AI agents often rely on **markdown-based skill files** that include:
 
@@ -23,7 +23,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🧩 Features
+## Features
 
 - User authentication (username & password)
 - Upload Markdown skill files (private by default)
@@ -44,7 +44,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 - Single Page Application (SPA)
 - RESTful backend API
@@ -53,7 +53,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -73,7 +73,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🔐 Security
+## Security
 
 - Passwords hashed using **PBKDF2 with per-user salts**
 - No plaintext password storage
@@ -82,7 +82,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 
 ---
 
-## 🚀 Running the Project Locally
+## Running the Project Locally
 
 ### Prerequisites
 
@@ -95,7 +95,7 @@ The focus of this project is **clean system design, correctness, and extensibili
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/nicked1205/agent-skills-registry.git
 cd agent-skills-registry
 ```
 
@@ -121,7 +121,7 @@ Frontend will be available at port 5173
 
 ---
 
-## 🧪 Testing & Quality
+## Testing & Quality
 
 - API tested through realistic user workflows
 - UI tested against edge cases (long names, tag limits, version rollback)
@@ -139,7 +139,7 @@ The project includes a focused testing document describing how input-driven edge
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 - Bulk deletion
 - Skill ratings and comments
@@ -151,7 +151,7 @@ The project includes a focused testing document describing how input-driven edge
 
 ---
 
-## 📐 Design Decisions & Justifications
+## Design Decisions & Justifications
 
 This project includes a detailed design justification document covering:
 
