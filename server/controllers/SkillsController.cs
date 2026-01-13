@@ -21,7 +21,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
     public async Task<IActionResult> UploadSkill(IFormFile file) {
         if (file == null || file.Length == 0) return BadRequest("No file uploaded");
 
-        if (!file.FileName.EndsWith(".md")) return BadRequest("Only .md files are supported"); // just to be sure, probably gonna add more validation later in frontend
+        if (!file.FileName.EndsWith(".md")) return BadRequest("Only .md files are supported");
 
         string markdown;
         using (var reader = new StreamReader(file.OpenReadStream())) {

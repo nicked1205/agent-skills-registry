@@ -52,14 +52,18 @@ export default function SkillMetadata({ skill }: Props) {
         <div>
           <span className="text-zinc-400">versions:</span> {skill.latestVersion}
         </div>
-        <div>
-          <span className="text-zinc-400">download count:</span>{" "}
-          {skill.downloadCount ?? 0}
-        </div>
-        <div>
-          <span className="text-zinc-400">clone count:</span>{" "}
-          {skill.cloneCount ?? 0}
-        </div>
+        {!skill.isCloned && (
+          <>
+            <div>
+              <span className="text-zinc-400">download count:</span>{" "}
+              {skill.downloadCount ?? 0}
+            </div>
+            <div>
+              <span className="text-zinc-400">clone count:</span>{" "}
+              {skill.cloneCount ?? 0}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
