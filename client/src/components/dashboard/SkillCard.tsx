@@ -17,7 +17,7 @@ export default function SkillCard({ skill, username }: Props) {
       onClick={() =>
         navigate(`/skills/${skill.id}`, { state: { from: location.search } })
       }
-      className="relative group border border-zinc-900 bg-zinc-950 rounded-sm p-3 hover:cursor-pointer flex flex-col h-full"
+      className="relative group border border-zinc-800 bg-zinc-950 p-3 hover:cursor-pointer flex flex-col h-full"
     >
       <HudCorners
         className="text-(--glitch-green) opacity-0 group-hover:opacity-60 pointer-events-none"

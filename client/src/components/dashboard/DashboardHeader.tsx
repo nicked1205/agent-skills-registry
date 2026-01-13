@@ -19,7 +19,7 @@ export default function DashboardHeader({ username }: Props) {
   }, [menuOpen]);
 
   return (
-    <header className="text-sm border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
+    <header className="text-xs sm:text-sm border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <span className="text-(--glitch-green) font-semibold">&gt;_</span>
         <span className="hidden md:block text-zinc-200">
@@ -28,12 +28,16 @@ export default function DashboardHeader({ username }: Props) {
         <span className="block md:hidden text-zinc-200">asr</span>
         <span className="text-zinc-500">dashboard</span>
       </div>
-      <div className="relative flex items-center gap-2" ref={menuRef}>
+      <div className="relative flex items-center gap-2 min-w-0" ref={menuRef}>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
+          className="flex items-center min-w-0 text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
+          title={`${username ?? "unknown"}@local`}
         >
-          {username ?? "unknown"}@local
+          <span className="max-w-36 sm:max-w-50 md:max-w-64 truncate">
+            {username ?? "unknown"}
+          </span>
+          <span className="shrink-0">@local</span>
         </button>
 
         {menuOpen && (

@@ -9,23 +9,25 @@ export default function SkillMetadata({ skill }: Props) {
     <div className="h-full border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-500 flex flex-col gap-3">
       {/* Identity */}
       <div className="min-w-0">
-        <div className="text-sm text-zinc-100 break-all">{skill.name}</div>
+        <div className="text-xs sm:text-sm text-zinc-100 break-all line-clamp-2 sm:line-clamp-none">
+          {skill.name}
+        </div>
         <div className="text-zinc-400">version v{skill.latestVersion}</div>
-        <div className="pt-2 text-zinc-400 leading-snug whitespace-pre-wrap text-xs sm:text-sm break-all line-clamp-5">
+        <div className="pt-2 text-zinc-300 leading-snug whitespace-pre-wrap text-xs sm:text-sm break-all line-clamp-4 sm:line-clamp-none">
           {skill.description}
         </div>
       </div>
 
       {/* Ownership */}
       <div className="space-y-1 min-w-0">
-        <div className="flex items-center gap-1 min-w-0">
+        <div className="flex gap-1 min-w-0">
           <span className="text-zinc-400 shrink-0">owner:</span>
-          <span className="min-w-0 truncate">{skill.ownerUsername}</span>
+          <span className="min-w-0 break-all">{skill.ownerUsername}</span>
         </div>
 
-        <div className="flex items-center gap-1 min-w-0">
+        <div className="flex gap-1 min-w-0">
           <span className="text-zinc-400 shrink-0">origin:</span>
-          <span className="min-w-0 truncate">
+          <span className="min-w-0 break-all">
             {skill.isCloned
               ? `cloned from ${skill.clonedFromUsername}`
               : "original"}

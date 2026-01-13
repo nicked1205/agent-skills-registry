@@ -166,6 +166,7 @@ export default function SkillDetails() {
               <MarkdownViewer
                 skill={skill}
                 onError={(err) => setSystemError(err)}
+                onDownload={() => setReloadKey(reloadKey + 1)}
               />
             )}
           </div>

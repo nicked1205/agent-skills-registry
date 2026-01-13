@@ -4,9 +4,10 @@ import { downloadSkill } from "../../api/skills";
 export interface Props {
   skill: SkillDetailsT;
   onError: (err: ErrorT) => void;
+  onDownload: () => void;
 }
 
-export default function MarkdownViewer({ skill, onError }: Props) {
+export default function MarkdownViewer({ skill, onError, onDownload }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -31,6 +32,8 @@ export default function MarkdownViewer({ skill, onError }: Props) {
       document.body.removeChild(a);
 
       URL.revokeObjectURL(url);
+
+      onDownload();
     } catch (err) {
       onError({
         title: "failed to download skill",

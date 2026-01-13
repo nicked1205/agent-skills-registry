@@ -231,7 +231,10 @@ export default function Dashboard() {
           view={view}
           layout={layout}
           searchOpen={searchOpen}
-          onViewChange={(v) => setView(v)}
+          onViewChange={(v) => {
+            setView(v);
+            updateUrl(v, searchName, selectedTags);
+          }}
           onLayoutChange={(l) => {
             setLayout(l);
             localStorage.setItem("layout", l);

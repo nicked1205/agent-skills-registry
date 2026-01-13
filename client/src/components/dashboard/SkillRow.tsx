@@ -80,10 +80,10 @@ export default function SkillRowCard({ skill, username }: Props) {
       {/* Stats */}
       <div className="ml-auto flex items-center gap-4 text-zinc-400">
         <span className="flex items-center gap-1">
-          <DownloadIcon className="h-3.5 w-3.5" /> {skill.cloneCount}
+          <DownloadIcon className="h-3.5 w-3.5" /> {skill.downloadCount}
         </span>
         <span className="flex items-center gap-1">
-          <CloneIcon className="h-3.5 w-3.5" /> {skill.downloadCount}
+          <CloneIcon className="h-3.5 w-3.5" /> {skill.cloneCount}
         </span>
       </div>
     </div>
