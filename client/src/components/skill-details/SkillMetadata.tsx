@@ -6,14 +6,14 @@ interface Props {
 
 export default function SkillMetadata({ skill }: Props) {
   return (
-    <div className="h-full border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-500 flex flex-col gap-3">
+    <div className="h-full bg-zinc-950 p-3 text-xs sm:text-sm text-zinc-500 flex flex-col gap-3">
       {/* Identity */}
       <div className="min-w-0">
-        <div className="text-xs sm:text-sm text-zinc-100 wrap-anywhere line-clamp-1 md:line-clamp-none">
+        <div className="text-sm md:text-md text-zinc-100 wrap-anywhere line-clamp-1 md:line-clamp-none">
           {skill.name}
         </div>
         <div className="text-zinc-400">version v{skill.latestVersion}</div>
-        <div className="pt-2 text-zinc-300 leading-snug whitespace-pre-wrap text-xs sm:text-sm wrap-anywhere line-clamp-3 md:line-clamp-none">
+        <div className="pt-2 text-zinc-300 leading-snug whitespace-pre-wrap text-xs sm:text-sm md:text-md wrap-anywhere line-clamp-3 md:line-clamp-none">
           {skill.description}
         </div>
       </div>
@@ -22,12 +22,14 @@ export default function SkillMetadata({ skill }: Props) {
       <div className="space-y-1 min-w-0">
         <div className="flex gap-1 min-w-0">
           <span className="text-zinc-400 shrink-0">owner:</span>
-          <span className="min-w-0 wrap-anywhere">{skill.ownerUsername}</span>
+          <span className="min-w-0 wrap-anywhere line-clamp-2 md:line-clamp-none">
+            {skill.ownerUsername}
+          </span>
         </div>
 
         <div className="flex gap-1 min-w-0">
           <span className="text-zinc-400 shrink-0">origin:</span>
-          <span className="min-w-0 wrap-anywhere">
+          <span className="min-w-0 wrap-anywhere line-clamp-2 md:line-clamp-none">
             {skill.isCloned
               ? `cloned from ${skill.clonedFromUsername}`
               : "original"}

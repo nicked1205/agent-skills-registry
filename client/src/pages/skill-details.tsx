@@ -172,7 +172,7 @@ export default function SkillDetails() {
           </div>
 
           {/* Tags */}
-          <div className="relative px-3 py-2">
+          <div className="relative px-3 py-2 border border-t-zinc-800">
             <SkillTags
               tags={tags}
               setTags={setTags}

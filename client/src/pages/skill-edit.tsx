@@ -14,6 +14,7 @@ export default function SkillEdit() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [systemError, setSystemError] = useState<ErrorT | null>(null);
+  const [selectionCount, setSelectionCount] = useState(0);
 
   const hasChanges = content !== original;
 
@@ -58,6 +59,10 @@ export default function SkillEdit() {
     }
   }
 
+  function updateSelectionCount(el: HTMLTextAreaElement) {
+    setSelectionCount(Math.max(0, el.selectionEnd - el.selectionStart));
+  }
+
   if (loading) {
     return <LoadingOverlay />;
   }
@@ -73,7 +78,7 @@ export default function SkillEdit() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-xs text-zinc-300">
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-sm text-zinc-300">
       {/* Header */}
       <div className="min-h-12 flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 border-b border-zinc-800">
         <div className="flex items-center gap-3 text-zinc-400">
@@ -93,20 +98,28 @@ export default function SkillEdit() {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        onSelect={(e) => updateSelectionCount(e.currentTarget)}
+        onMouseUp={(e) => updateSelectionCount(e.currentTarget)}
+        onKeyUp={(e) => updateSelectionCount(e.currentTarget)}
         spellCheck={false}
         className="flex-1 resize-none p-4 bg-zinc-950 text-zinc-200 outline-none caret-(--glitch-green) custom-scrollbar"
       />
 
       {/* Footer */}
-      <div className="h-12 flex items-center justify-end gap-4 px-4 border-t border-zinc-800">
-        <button onClick={() => navigate(-1)} className="btn-neutral">
-          exit
-        </button>
+      <div className="h-12 flex items-center justify-between gap-4 px-4 border-t border-zinc-800 text-xs sm:text-sm">
+        <div className="flex items-center gap-3 text-zinc-500">
+          <span>{content.length} chars</span>
+          <span>{selectionCount} selected</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="btn-neutral">
+            exit
+          </button>
 
-        <button
-          onClick={handleSave}
-          disabled={!hasChanges || saving}
-          className={`
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className={`
             ${
               hasChanges
                 ? "btn-edit-action-confirm"
@@ -114,9 +127,10 @@ export default function SkillEdit() {
             }
             disabled:opacity-50
           `}
-        >
-          {saving ? "committing…" : "commit new version"}
-        </button>
+          >
+            {saving ? "committing…" : "commit new version"}
+          </button>
+        </div>
       </div>
 
       {/* Error modal */}

@@ -25,6 +25,8 @@ Testing emphasized product behavior and user experience, not just code correctne
 Tested scenarios include:
 
 - Maximum-length usernames
+- Empty usernames
+- Usernames not valid
 
 Validated behavior:
 
@@ -32,6 +34,11 @@ Validated behavior:
 - Truncation and wrap behave consistently
 - No layout breakage
 - Identity remains readable and distinguishable
+- Errors accordingly
+
+Conclusion:
+
+- Size limit can be removed and layout wont be affected
 
 ---
 
@@ -75,6 +82,10 @@ Validated:
 - Ill-formatted description parts are discarded (based on the format in brief)
 - Errors accordingly
 
+### Conclusion
+
+- All size limits can be removed and layout wont be affected
+
 ---
 
 ## 3. Markdown File Upload Validation
@@ -106,8 +117,13 @@ Tested:
 
 Validated:
 
+- Tags too long truncates effectively, sizes easy to read and are labelled clearly
 - Excessively long tags do not break layout
 - Tag text remains readable or inferable
+
+Conclusion:
+
+- Limit can easily be removed and the display of a tag won't change
 
 ---
 
@@ -122,6 +138,10 @@ Validated:
 - Tag limits are enforced at both the UI and server level
 - Errors accordingly
 - Layout remains stable with varying tag counts
+
+Conclusion:
+
+- Limit can easily be removed and the display of tags won't change
 
 ---
 

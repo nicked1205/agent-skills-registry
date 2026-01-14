@@ -22,7 +22,7 @@ export default function DashboardControls({
     <div className="mb-3 flex items-center justify-between">
       <div className="flex items-center gap-6">
         {/* Toggle Public/Private */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs sm:text-sm">
           <span className="text-zinc-600">view:</span>
           <button
             onClick={() => onViewChange("private")}
@@ -43,7 +43,7 @@ export default function DashboardControls({
         </div>
 
         {/* Toggle layout */}
-        <div className="hidden md:flex items-center text-xs gap-2">
+        <div className="hidden md:flex items-center text-xs sm:text-sm gap-2">
           <span className="text-zinc-600">layout:</span>
           <button
             onClick={() => onLayoutChange("card")}
@@ -68,7 +68,7 @@ export default function DashboardControls({
         {/* Search toggle */}
         <button
           onClick={onToggleSearch}
-          className="text-xs text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
+          className="text-xs sm:text-sm text-zinc-400 hover:text-(--glitch-green) hover:cursor-pointer"
         >
           {searchOpen ? "hide search" : "search"}
         </button>
@@ -77,7 +77,7 @@ export default function DashboardControls({
         <button
           onClick={onAddSkill}
           disabled={view == "public"}
-          className={`text-xs border px-3 py-1 ${
+          className={`text-xs sm:text-sm border px-3 py-1 ${
             view === "public"
               ? "border-zinc-800 text-zinc-600"
               : "btn-glitch-green-2"

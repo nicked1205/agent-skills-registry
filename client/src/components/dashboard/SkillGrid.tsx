@@ -118,13 +118,13 @@ export default function SkillGrid({
   return (
     <>
       {page === 1 && loading && (
-        <p className="text-xs text-zinc-500 justify-center flex mt-6">
+        <p className="text-sm text-zinc-500 justify-center flex mt-6">
           loading skills…
         </p>
       )}
 
       {!loading && skills.length === 0 && (
-        <p className="text-xs text-zinc-500 justify-center flex mt-6">
+        <p className="text-sm text-zinc-500 justify-center flex mt-6">
           {view === "private" ? "no local entries" : "no public entries"}
         </p>
       )}
@@ -137,7 +137,7 @@ export default function SkillGrid({
         {layout === "card" && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mx-3">
             {skills.map((skill) => (
-              <div key={skill.id} className="h-44 flex flex-col">
+              <div key={skill.id} className="h-50 sm:h-54 flex flex-col">
                 <SkillCard skill={skill} username={username} view={view} />
               </div>
             ))}
@@ -163,7 +163,7 @@ export default function SkillGrid({
           ref={loadMoreRef}
           className={`${
             !(loading && page > 1) ? "" : "h-10"
-          } flex items-center justify-center text-xs text-zinc-500`}
+          } flex items-center justify-center text-sm text-zinc-500`}
         >
           {loading && page > 1 ? "loading more…" : ""}
         </div>

@@ -24,7 +24,7 @@ export default function DashboardHeader({ username }: Props) {
   }, [menuOpen]);
 
   return (
-    <header className="text-xs sm:text-sm border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
+    <header className="text-xs sm:text-sm sm:text-md border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <span className="text-(--glitch-green) font-semibold">&gt;_</span>
         <span className="hidden md:block text-zinc-200">

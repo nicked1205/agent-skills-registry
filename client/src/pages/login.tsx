@@ -37,15 +37,15 @@ export default function Login() {
           strokeWidth={3}
         />
 
-        <h1 className="text-sm font-semibold text-zinc-200">resume session</h1>
-        <p className="mt-1 mb-3 text-xs text-zinc-500">
+        <h1 className="text-md font-semibold text-zinc-200">resume session</h1>
+        <p className="mt-1 mb-3 text-sm text-zinc-500">
           <span className="text-(--glitch-green)">&gt;</span> existing operator?
           authenticate
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1 text-xs text-zinc-500">username</label>
+            <label className="block mb-1 text-sm text-zinc-500">username</label>
             <input
               type="text"
               className="w-full input-glitch-green"
@@ -55,7 +55,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block mb-1 text-xs text-zinc-500">password</label>
+            <label className="block mb-1 text-sm text-zinc-500">password</label>
             <input
               type="password"
               className="w-full input-glitch-green"
@@ -65,7 +65,7 @@ export default function Login() {
           </div>
 
           {error && (
-            <p className="text-xs text-red-400">error: {error.toLowerCase()}</p>
+            <p className="text-sm text-red-400">error: {error.toLowerCase()}</p>
           )}
 
           <button
@@ -76,7 +76,7 @@ export default function Login() {
             {loading ? "authenticating…" : "login"}
           </button>
 
-          <p className="pt-2 text-xs text-zinc-500">
+          <p className="pt-2 text-sm text-zinc-500">
             no account?{" "}
             <Link
               to="/register"

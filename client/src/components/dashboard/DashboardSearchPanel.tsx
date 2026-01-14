@@ -56,20 +56,17 @@ export default function DashboardSearchPanel({
         />
         <div className="flex items-center gap-3 justify-between">
           {/* Tag filter toggle */}
-          <div className="relative md:mr-6">
+          <div ref={tagDropdownRef} className="relative md:mr-6">
             <button
               onClick={() => setTagFilterOpen(!tagFilterOpen)}
-              className="btn-glitch-green-2"
+              className={`btn-glitch-green-2`}
             >
               filter tags
             </button>
 
             {/* Tag filter dropdown */}
             {tagFilterOpen && (
-              <div
-                className="absolute z-10 md:-translate-x-1/2 md:left-1/2 mt-2 w-50 border border-zinc-800 bg-zinc-950 p-3"
-                ref={tagDropdownRef}
-              >
+              <div className="absolute z-10 md:-translate-x-1/2 md:left-1/2 mt-2 w-50 border border-zinc-800 bg-zinc-950 p-3">
                 {/* Tag Search */}
                 <input
                   value={tagSearch}
@@ -78,7 +75,7 @@ export default function DashboardSearchPanel({
                   className="mb-2 w-full input-glitch-green"
                 />
 
-                <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1 text-xs items-center">
+                <div className="max-h-40 overflow-y-auto custom-scrollbar space-y-1 text-xs sm:text-sm items-center">
                   {availableTags.length === 0 && (
                     <div className="text-zinc-400 text-center">
                       no tags with that name
@@ -93,7 +90,8 @@ export default function DashboardSearchPanel({
                     return (
                       <label
                         key={tag.id}
-                        className={`flex items-center gap-2 text-zinc-600 dark:text-zinc-400 ${
+                        title={tag.name}
+                        className={`flex items-center gap-2 text-zinc-600 dark:text-zinc-400 truncate ${
                           disabled ? "" : "cursor-pointer"
                         }`}
                       >
@@ -121,7 +119,10 @@ export default function DashboardSearchPanel({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={onClear} className="text-xs btn-neutral">
+            <button
+              onClick={onClear}
+              className="text-xs sm:text-sm btn-neutral"
+            >
               clear
             </button>
 

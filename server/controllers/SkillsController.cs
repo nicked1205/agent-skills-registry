@@ -414,6 +414,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         [FromBody] AddTagDto dto
     ) {
         const int SKILL_MAX_TAGS = 20;
+        const int MAX_TAG_LENGTH = 50;
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -422,7 +423,7 @@ public class SkillsController(AppDbContext db) : ControllerBase {
         // normalize tag name in BE in case haven''t done in frontend
         var normalized = dto.Tag.Trim().ToLowerInvariant();
 
-        if (normalized.Length > 16) return BadRequest("Tag must be 16 characters or fewer");
+        if (normalized.Length > MAX_TAG_LENGTH) return BadRequest($"Tag must be {MAX_TAG_LENGTH} characters or fewer");
 
         if (!normalized.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '.' || c == '-')) return BadRequest("Tag may only contain letters, numbers, underscores (_), dots (.) and hyphens (-)");
 

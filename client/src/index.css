@@ -69,11 +69,11 @@
 
 @layer components {
   .btn-glitch-green {
-    @apply border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 hover:border-(--glitch-green) hover:cursor-pointer disabled:opacity-50;
+    @apply border border-zinc-800 bg-zinc-950 py-1 text-sm text-zinc-200 hover:border-(--glitch-green) hover:cursor-pointer disabled:opacity-50;
   }
 
   .btn-glitch-green-2 {
-    @apply text-xs border px-3 py-1 bg-(--glitch-green-container-bg) border-zinc-800 text-zinc-300 hover:border-(--glitch-green) hover:text-(--glitch-green) hover:cursor-pointer;
+    @apply text-xs sm:text-sm border px-3 py-1 bg-(--glitch-green-container-bg) border-zinc-800 text-zinc-300 hover:border-(--glitch-green) hover:text-(--glitch-green) hover:cursor-pointer;
   }
 
   .btn-neutral {
@@ -101,7 +101,7 @@
   }
 
   .input-glitch-green {
-    @apply bg-(--glitch-green-container-bg) border border-zinc-800 px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-(--glitch-green) caret-(--glitch-green);
+    @apply bg-(--glitch-green-container-bg) border border-zinc-800 px-2 py-1 text-sm text-zinc-200 focus:outline-none focus:border-(--glitch-green) caret-(--glitch-green);
   }
 }
 

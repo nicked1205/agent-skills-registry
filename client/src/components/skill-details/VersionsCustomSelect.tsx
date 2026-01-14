@@ -34,7 +34,10 @@ export default function VersionsCustomSelect({
   const selected = versions.find((v) => v.versionNumber === value);
 
   return (
-    <div ref={ref} className="relative inline-flex items-center gap-2 text-xs">
+    <div
+      ref={ref}
+      className="relative inline-flex items-center gap-2 text-xs sm:text-sm"
+    >
       {label && <span className="text-zinc-600 select-none">{label}</span>}
 
       {/* Button */}
@@ -62,7 +65,7 @@ export default function VersionsCustomSelect({
                 }}
                 disabled={active || v.versionNumber === disable}
                 className={`
-                  w-full flex justify-between px-3 py-1.5 text-left text-xs
+                  w-full flex justify-between px-3 py-1.5 text-left text-sm
                   ${
                     active
                       ? "text-(--glitch-green) bg-(--glitch-green-highlight) cursor-default"

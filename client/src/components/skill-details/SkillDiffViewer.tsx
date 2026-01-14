@@ -98,9 +98,9 @@ export default function SkillDiffViewer({
   }
 
   return (
-    <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
+    <div className="h-full flex flex-col bg-zinc-950">
       {/* Toolbar */}
-      <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500 justify-between">
+      <div className="flex items-center gap-4 px-3 py-2 border-b border-zinc-800 text-xs sm:text-sm text-zinc-500 justify-between">
         <div className="flex items-center gap-2">
           {isRollback ? (
             <span className="text-zinc-400">v{from}</span>
@@ -152,9 +152,9 @@ export default function SkillDiffViewer({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto text-xs md:text-sm leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto text-xs sm:text-sm md:text-md leading-relaxed text-zinc-200 max-w-none custom-scrollbar">
         {from == to ? (
-          <div className="h-full flex items-center justify-center text-xs text-zinc-500">
+          <div className="h-full flex items-center justify-center text-xs sm:text-sm text-zinc-500">
             select two different versions to compare
           </div>
         ) : (

@@ -286,17 +286,20 @@ A DTO is a simple object used to move data across application boundaries without
 
 ## 14. Metadata Constraints
 
+- username capped at 100 characters
 - Skill name capped at 100 characters
 - Description capped at 500 characters
 
 These limits ensure:
 
+- username length aligns with standard limit of other famous apps
+- Preserves the purpose of naming files
 - Concise identifiers suitable for UI and search
 - Descriptions remain summaries, not documentation
-- Metadata remains lightweight and consistent
+- Give purpose to storing and displaying the file content in viewer components
 - Prevents infinitely long skill name or description in database -> performance and logical issue
 
-These constraints can be modified easily in both frontend and backend.
+**These constraints can be modified easily on client's request in both frontend and backend.**
 
 ---
 
@@ -325,9 +328,9 @@ These constraints can be modified easily in both frontend and backend.
 ### Constraints
 
 - Maximum 20 tags per skill (more than sufficient to support organization and filtering)
-- Maximum 16 characters per tag
+- Maximum 50 characters per tag
 
-These constraints preserve readability, and logically aligns with tag-filtering, and can be modified easily on client's request in both frontend and backend.
+**All tag displays are design for tags with unlimited length and unlimited amount of tags**, but these constraints logically aligns with tag-filtering and preserves data integrity, and **can be modified easily on client's request in both frontend and backend.**
 
 ---
 
@@ -545,3 +548,16 @@ This separation improves reasoning, prevents stale data, and avoids duplicated r
 - Ensures deterministic parsing and predictable validation errors
 
 If richer metadata becomes necessary, the parser can be extended or replaced with a corresponding YAML parser without breaking existing files, as the current format is just a simpler YAML parser
+
+## 31. Stats formatting
+
+### Decision
+
+- For some stat displays, limit the component's width to 4ch
+- Map values over 1_000 to K format, 1_000_000 to M, and 1_000_000_000 to B
+
+### Justification
+
+- The format stat function can easily be changed to add decimal points later on
+- Reduces wiggling elements when compared cards or rows when stat differs
+- Makes stat displays on cards and rows cleaner

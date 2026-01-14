@@ -44,9 +44,9 @@ export default function MarkdownViewer({ skill, onError, onDownload }: Props) {
   };
 
   return (
-    <div className="h-full flex flex-col border border-zinc-800 bg-zinc-950">
+    <div className="h-full flex flex-col bg-zinc-950">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 px-3 py-2 border-b border-zinc-800 text-xs text-zinc-500">
+      <div className="flex items-center justify-between gap-4 px-3 py-2 border-b border-zinc-800 text-xs sm:text-sm text-zinc-500">
         <span className="text-zinc-400">markdown</span>
 
         <div className="flex gap-3">
@@ -66,7 +66,7 @@ export default function MarkdownViewer({ skill, onError, onDownload }: Props) {
 
       {/* Content */}
       <div className="flex-1 min-h-0 p-4 overflow-y-auto text-zinc-200 max-w-none custom-scrollbar">
-        <pre className="text-xs md:text-sm whitespace-pre-wrap wrap-anywhere leading-relaxed">
+        <pre className="text-xs sm:text-sm md:text-md whitespace-pre-wrap wrap-anywhere leading-relaxed">
           {skill.content || "// No content in this version"}
         </pre>
       </div>

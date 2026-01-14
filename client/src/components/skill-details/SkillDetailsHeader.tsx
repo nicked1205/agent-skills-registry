@@ -111,13 +111,13 @@ export default function SkillDetailsHeader({
       {/* Back */}
       <button
         onClick={() => navigate(`/dashboard${fromDashboardState}`)}
-        className="text-lg md:text-xs btn-neutral"
+        className="text-lg md:text-sm btn-neutral"
       >
         ← <span className="hidden md:inline-block">dashboard</span>
       </button>
 
       {/* Actions */}
-      <div className="flex items-center gap-4 text-xs text-zinc-400">
+      <div className="flex items-center gap-4 text-xs sm:text-sm text-zinc-400">
         {isPublicView && (
           <button onClick={handleCloneSkill} className="btn-yellow-tool">
             clone

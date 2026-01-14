@@ -3,6 +3,7 @@ import type { SkillCardT } from "../../types";
 import { CloneIcon, DownloadIcon, VisibilityIcon } from "../../icons";
 import HudCorners from "../ui/HudCorners";
 import FadeHoriScroll from "../ui/FadeHoriScroll";
+import { formatStat } from "../../utils/format";
 
 interface Props {
   skill: SkillCardT;
@@ -30,10 +31,10 @@ export default function SkillCard({ skill, username, view }: Props) {
 
       {/* Name */}
       <div className="flex flex-col min-w-0 gap-0.5">
-        <span className="text-sm text-zinc-100 font-medium truncate">
+        <span className="text-sm sm:text-md text-zinc-100 font-medium truncate">
           {skill.name}
         </span>
-        <span className="text-[11px] text-zinc-500 truncate">
+        <span className="text-xs sm:text-sm text-zinc-500 truncate">
           {skill.isCloned
             ? `cloned from ${skill.clonedFromUsername}`
             : skill.ownerUsername === username
@@ -42,33 +43,34 @@ export default function SkillCard({ skill, username, view }: Props) {
         </span>
       </div>
 
-      {/* Description and Tags */}
-      <div className="flex flex-col gap-2 mt-2 flex-1">
+      {/* Description */}
+      <div className="flex flex-col mt-2 flex-1">
         {skill.description && (
-          <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed wrap-anywhere">
+          <p className="text-xs sm:text-sm text-zinc-400 line-clamp-3 leading-relaxed wrap-anywhere">
             {skill.description}
           </p>
         )}
-
-        {skill.tags && skill.tags.length > 0 && (
-          <div className="relative">
-            <FadeHoriScroll className="flex gap-1">
-              {skill.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="shrink-0 border border-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 max-w-30 truncate"
-                  title={tag.name}
-                >
-                  {tag.name}
-                </span>
-              ))}
-            </FadeHoriScroll>
-          </div>
-        )}
       </div>
 
+      {/* Tags */}
+      {skill.tags && skill.tags.length > 0 && (
+        <div className="relative">
+          <FadeHoriScroll className="flex gap-1">
+            {skill.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="shrink-0 border border-zinc-800 px-1.5 py-0.5 text-xs sm:text-sm text-zinc-500 max-w-30 sm:max-w-35 truncate"
+                title={tag.name}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </FadeHoriScroll>
+        </div>
+      )}
+
       {/* Metadata */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-500 mt-auto pt-2">
+      <div className="flex items-center justify-between text-xs sm:text-sm text-zinc-500 mt-auto pt-2">
         <div className="flex items-center gap-3">
           <span>v{skill.latestVersion}</span>
           <span>{new Date(skill.updatedAt).toLocaleDateString()}</span>
@@ -82,13 +84,13 @@ export default function SkillCard({ skill, username, view }: Props) {
 
         {!skill.isCloned && (
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 w-[calc(14px+4ch)]">
               <DownloadIcon className="h-3.5 w-3.5" />
-              {skill.downloadCount}
+              {formatStat(skill.downloadCount)}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 w-[calc(14px+4ch)]">
               <CloneIcon className="h-3.5 w-3.5" />
-              {skill.cloneCount}
+              {formatStat(skill.cloneCount)}
             </span>
           </div>
         )}

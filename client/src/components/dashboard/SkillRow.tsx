@@ -3,6 +3,7 @@ import type { SkillCardT } from "../../types";
 import { CloneIcon, DownloadIcon, VisibilityIcon } from "../../icons";
 import HudCorners from "../ui/HudCorners";
 import FadeHoriScroll from "../ui/FadeHoriScroll";
+import { formatStat } from "../../utils/format";
 
 interface Props {
   skill: SkillCardT;
@@ -25,7 +26,7 @@ export default function SkillRowCard({ skill, username, view }: Props) {
       onClick={() =>
         navigate(`/skills/${skill.id}`, { state: { from: location.search } })
       }
-      className="relative group cursor-pointer border border-zinc-900 bg-zinc-950 px-4 py-2 flex items-center text-xs hover:bg-(--glitch-green-container-bg) gap-[3%] min-w-0"
+      className="relative group cursor-pointer border border-zinc-900 bg-zinc-950 px-4 py-2 flex items-center text-xs lg:text-sm hover:bg-(--glitch-green-container-bg) gap-[3%] min-w-0"
     >
       <HudCorners
         className="text-(--glitch-green) opacity-0 group-hover:opacity-60"
@@ -46,8 +47,8 @@ export default function SkillRowCard({ skill, username, view }: Props) {
       )}
 
       {/* Owner */}
-      <div className="w-[15%] flex items-center gap-1 text-zinc-400 min-w-0">
-        <span className="truncate">
+      <div className="w-3 lg:w-[15%] flex items-center gap-1 text-zinc-400 min-w-0">
+        <span className="hidden lg:block truncate">
           {skill.isCloned
             ? skill.clonedFromUsername
             : skill.ownerUsername === username
@@ -74,7 +75,7 @@ export default function SkillRowCard({ skill, username, view }: Props) {
           {skill.tags.map((tag) => (
             <span
               key={tag.id}
-              className="shrink-0 px-1.5 py-0.5 border border-zinc-800 text-[10px] text-zinc-400 whitespace-nowrap"
+              className="shrink-0 px-1.5 py-0.5 border border-zinc-800 text-[11px] lg:text-xs text-zinc-400 whitespace-nowrap max-w-30 sm:max-w-35 truncate"
               title={tag.name}
             >
               {tag.name}
@@ -85,11 +86,12 @@ export default function SkillRowCard({ skill, username, view }: Props) {
 
       {/* Stats */}
       <div className="ml-auto flex items-center gap-4 text-zinc-400">
-        <span className="flex items-center gap-1">
-          <DownloadIcon className="h-3.5 w-3.5" /> {skill.downloadCount}
+        <span className="flex items-center gap-1 w-[calc(14px+4ch)]">
+          <DownloadIcon className="h-3.5 w-3.5" />{" "}
+          {formatStat(skill.downloadCount)}
         </span>
-        <span className="flex items-center gap-1">
-          <CloneIcon className="h-3.5 w-3.5" /> {skill.cloneCount}
+        <span className="flex items-center gap-1 w-[calc(14px+4ch)]">
+          <CloneIcon className="h-3.5 w-3.5" /> {formatStat(skill.cloneCount)}
         </span>
       </div>
     </div>
