@@ -30,3 +30,5 @@ Thumbs.db
 
 tests/
 doc.txt
+# Operational notes and runbooks (local only, not design docs)
+DEPLOYMENT.md

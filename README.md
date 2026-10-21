@@ -171,18 +171,33 @@ From `client/`:
 
 ## Deployment
 
-The backend deploys to **Render** as a Docker container with a persistent disk for
-the SQLite file; the frontend deploys to **Vercel** as a static SPA.
+The backend ships as a Docker container (`server/Dockerfile`) serving the API with
+SQLite on a mounted persistent disk; the frontend ships as a static SPA build.
 
-All environment-specific settings (database location, CORS origins, JWT secret,
-API base URL) are read from configuration rather than hardcoded, so no code
-changes are needed to deploy.
+Every environment-specific value is read from configuration rather than compiled
+in, so the same build runs locally and in production without code changes:
 
-> **Note:** keeping SQLite data across redeploys requires a Render **paid**
-> instance type — disks are not available on the free plan, where the filesystem
-> is ephemeral and the registry would reset on every restart.
+| Key | Configures |
+| --- | --- |
+| `Database:Provider` / `Database:Path` | Storage engine and database file location |
+| `Cors:AllowedOrigins` | Origins permitted to call the API |
+| `Jwt:Key` | Token signing secret |
+| `VITE_API_URL` | API base URL the client is built against |
 
-**Full walkthrough:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+Two deliberate choices are worth noting:
+
+- **Startup fails fast on bad configuration.** The app refuses to boot if the JWT
+  key is missing, still the development placeholder, or shorter than the 32 bytes
+  HMAC-SHA256 requires — a misconfigured deployment stops immediately rather than
+  signing tokens with a public secret.
+- **TLS is assumed to terminate at a proxy.** The app trusts `X-Forwarded-Proto`
+  and only redirects to HTTPS itself in Development, since redirecting behind a
+  TLS-terminating load balancer causes a redirect loop.
+
+Persisting SQLite across redeploys requires a host that offers a persistent
+volume; on an ephemeral filesystem the registry resets on every restart. This is
+the main trade-off of choosing SQLite, and the reason the provider is
+configurable — see [DESIGN.md](./DESIGN.md).
 
 ---
 
@@ -335,6 +350,7 @@ This project includes a detailed design justification document covering:
 - API design and DTO usage
 - UX and responsiveness constraints
 - Framework and dependency selection
+- Deployment configuration and the SQLite persistence trade-off
   and more...
 
 **Read the full document:** [DESIGN.md](./DESIGN.md)

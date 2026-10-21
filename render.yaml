@@ -11,7 +11,7 @@ services:
     # A persistent disk is required to keep the SQLite file across deploys and
     # restarts, and Render only offers disks on paid instance types. On the free
     # plan the filesystem is ephemeral, so every redeploy or spin-down would
-    # reset the registry to empty. See DEPLOYMENT.md before changing this.
+    # reset the registry to empty. See DESIGN.md section 32 before changing this.
     plan: starter
 
     healthCheckPath: /health

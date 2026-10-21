@@ -59,7 +59,7 @@ builder.Services.AddDbContext<AppDbContext>(options => {
                 "Npgsql.EntityFrameworkCore.PostgreSQL package, replace this branch with " +
                 "options.UseNpgsql(...), and generate a Postgres migration set — EF " +
                 "migrations are provider-specific, so the SQLite ones in Migrations/ " +
-                "cannot be reused. See DEPLOYMENT.md.");
+                "cannot be reused. See DESIGN.md section 32.");
 
         default:
             throw new NotSupportedException(

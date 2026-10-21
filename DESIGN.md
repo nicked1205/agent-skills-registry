@@ -203,6 +203,7 @@ Return explicit HTTP status codes:
 ### Decision
 
 - Explicitly allow requests only from the frontend origin
+- Supply that origin through configuration per environment rather than compiling it in, so the deployed frontend URL does not require a code change
 
 ### Justification
 
@@ -561,3 +562,31 @@ If richer metadata becomes necessary, the parser can be extended or replaced wit
 - The format stat function can easily be changed to add decimal points later on
 - Reduces wiggling elements when compared cards or rows when stat differs
 - Makes stat displays on cards and rows cleaner
+
+---
+
+## 32. Deployment Configuration
+
+### Decision
+
+- Read every environment-specific value from configuration instead of compiling it in: database provider and path, allowed CORS origins, JWT signing key, and the API base URL the client builds against
+- Keep local defaults so that running the project with no configuration still works
+- Refuse to start when the JWT key is missing, is still the committed development placeholder, or is shorter than 32 bytes
+- Trust `X-Forwarded-Proto` and only perform HTTPS redirection in Development
+- Expose an unauthenticated `/health` endpoint
+- Keep the database provider selectable rather than calling `UseSqlite` directly
+
+### Justification
+
+- The same build artifact can run locally and in production, so what is tested is what ships
+- Secrets stay out of the repository; the signing key is injected by the host and can be rotated without a code change
+- Failing at startup makes a misconfigured deployment obvious immediately, instead of appearing later as tokens signed with a secret that is public in the git history
+  -> Consistent with the fail-fast philosophy in section 8
+- Behind a TLS-terminating proxy the application only ever sees plain HTTP, so redirecting to HTTPS in-process would redirect indefinitely
+- A dedicated liveness endpoint lets a host distinguish "process is up" from "a route happens to answer", without exposing anything authenticated
+
+### SQLite persistence trade-off
+
+- SQLite stores the entire database in one file, so it survives restarts only on a persistent volume
+- On an ephemeral filesystem every redeploy resets the registry, which is acceptable for a demo but not for real accounts
+- This is the cost of the simplicity SQLite buys elsewhere in this project, and the reason the provider is configurable: moving to a networked database is a configuration and migration task rather than a rewrite of the data access layer
