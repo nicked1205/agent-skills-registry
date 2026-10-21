@@ -169,6 +169,23 @@ From `client/`:
 
 ---
 
+## Deployment
+
+The backend deploys to **Render** as a Docker container with a persistent disk for
+the SQLite file; the frontend deploys to **Vercel** as a static SPA.
+
+All environment-specific settings (database location, CORS origins, JWT secret,
+API base URL) are read from configuration rather than hardcoded, so no code
+changes are needed to deploy.
+
+> **Note:** keeping SQLite data across redeploys requires a Render **paid**
+> instance type — disks are not available on the free plan, where the filesystem
+> is ephemeral and the registry would reset on every restart.
+
+**Full walkthrough:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
 ## API Reference
 
 All routes are served from the backend root — there is no `/api` prefix.
