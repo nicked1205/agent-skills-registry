@@ -1,0 +1,16 @@
+bin/
+obj/
+
+# Never bake the local dev database into the image. It would ship real data and
+# be shadowed by the mounted disk anyway.
+app.db
+*.db
+*.db-wal
+*.db-shm
+
+appsettings.Development.json
+server.http
+Properties/launchSettings.json
+
+.vs/
+*.user
