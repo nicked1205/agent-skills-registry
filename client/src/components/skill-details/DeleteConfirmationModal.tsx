@@ -63,12 +63,9 @@ export default function DeleteConfirmationModal({
         <div className="px-4 py-3 space-y-2 leading-relaxed">
           <p>You are about to permanently delete:</p>
 
-          <p className="text-red-400">
-            {">"}{" "}
-            <span className="text-zinc-100 wrap-anywhere line-clamp-3">
-              {skill.name}
-            </span>
-          </p>
+          <span className="text-zinc-100 wrap-anywhere line-clamp-3">
+            {skill.name}
+          </span>
 
           <p className="text-zinc-500">
             All versions will be removed.
