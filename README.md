@@ -172,7 +172,7 @@ From `client/`:
 ## Deployment
 
 The backend ships as a Docker container (`server/Dockerfile`) serving the API with
-SQLite on a mounted persistent disk; the frontend ships as a static SPA build.
+SQLite; the frontend ships as a static SPA build.
 
 Every environment-specific value is read from configuration rather than compiled
 in, so the same build runs locally and in production without code changes:
@@ -195,9 +195,10 @@ Two deliberate choices are worth noting:
   TLS-terminating load balancer causes a redirect loop.
 
 Persisting SQLite across redeploys requires a host that offers a persistent
-volume; on an ephemeral filesystem the registry resets on every restart. This is
-the main trade-off of choosing SQLite, and the reason the provider is
-configurable — see [DESIGN.md](./DESIGN.md).
+volume; on an ephemeral filesystem the registry resets on every restart. The
+current demo deployment runs without one, so **its data is wiped on every
+redeploy and after idle spin-down**. This is the main trade-off of choosing
+SQLite, and the reason the provider is configurable — see [DESIGN.md](./DESIGN.md).
 
 ---
 

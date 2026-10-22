@@ -8,11 +8,15 @@ services:
     dockerfilePath: ./server/Dockerfile
     dockerContext: ./server
 
-    # A persistent disk is required to keep the SQLite file across deploys and
-    # restarts, and Render only offers disks on paid instance types. On the free
-    # plan the filesystem is ephemeral, so every redeploy or spin-down would
-    # reset the registry to empty. See DESIGN.md section 32 before changing this.
-    plan: starter
+    # Deliberately on the free plan, which cannot have a persistent disk. The
+    # SQLite file therefore lives on the container's ephemeral filesystem and
+    # the registry RESETS TO EMPTY on every redeploy and every spin-down after
+    # inactivity. That is an accepted trade-off for a demo deployment.
+    #
+    # To make data durable, switch to a paid instance type and re-add the disk
+    # block (mountPath must contain Database__Path), or move to Postgres.
+    # See DESIGN.md section 32.
+    plan: free
 
     healthCheckPath: /health
 
@@ -23,7 +27,8 @@ services:
       - key: ASPNETCORE_URLS
         value: http://+:10000
 
-      # Must sit inside the mounted disk below.
+      # Ephemeral on the free plan (no disk). If a disk is added, this path must
+      # sit inside its mountPath.
       - key: Database__Path
         value: /var/data/app.db
 
@@ -36,8 +41,3 @@ services:
       # matches the browser's origin exactly, every API call fails CORS.
       - key: Cors__AllowedOrigins__0
         sync: false
-
-    disk:
-      name: sqlite-data
-      mountPath: /var/data
-      sizeGB: 1

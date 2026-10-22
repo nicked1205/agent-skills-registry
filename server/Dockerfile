@@ -17,7 +17,8 @@ COPY --from=build /app ./
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:10000
 
-# SQLite lives on a mounted disk, not in the image. Database__Path points here;
+# SQLite is never baked into the image. Mount a disk at /var/data to persist it;
+# without one the file lives on the container's ephemeral filesystem. Either way
 # the app creates the directory and runs migrations on startup.
 ENV Database__Path=/var/data/app.db
 
